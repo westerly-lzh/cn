@@ -1,0 +1,6 @@
+markdown: rdiscount
+permalink: /:year/:month/:title/
+url: http://westerly-lzh.github.io/cn
+author: ÀîÕù
+pygments: true
+
