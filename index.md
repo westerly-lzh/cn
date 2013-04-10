@@ -1,5 +1,5 @@
 ---
-title: 知识就是力量
+title: Thinking makes world simpler
 layout: page
 ---
 
