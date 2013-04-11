@@ -14,8 +14,8 @@ tags:
 其次关于ubuntu12.04上安装python3++的问题。我的体验还是不要安装的好，当然我是由于安装好后，执行了下面两行操作
 
 {% highlight python %}
-$sudo rm /usr/bin/python
-$sudo ln -s /usr/bin/python3.2 /usr/bin/python
+sudo rm /usr/bin/python
+sudo ln -s /usr/bin/python3.2 /usr/bin/python
 {% endhighlight %}
 
 不得不说在ubuntu中有很多的工具是依赖python2.7的，而我上面做的事情就是八python2.7的链接干掉然后链接到python3.2上，后边就是当我使用一些工具命令时，就开始出问题了。比如我
