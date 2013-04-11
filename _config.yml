@@ -1,6 +1,6 @@
 markdown: rdiscount
 permalink: /:year/:month/:title/
-url: http://westerly-lzh.github.com/cn
+url: http://jeff-lee.name/cn
 author: Jeff Lee
 pygments: true
 

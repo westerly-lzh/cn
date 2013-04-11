@@ -5,7 +5,7 @@ title: 简历(李争)
 
 # 联系方式
 
-Email：westerly.lzh@gmail.com；主页：<http://westerly-lzh.github.io/>
+Email：westerly.lzh@gmail.com；主页：<http://jeff-lee.name/>
 
 # 教育背景
 
