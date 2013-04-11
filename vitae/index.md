@@ -1,6 +1,6 @@
 ---
 layout: page
-title: 简历(李争)
+title: Vitae(Jeff Lee)
 ---
 
 # 联系方式

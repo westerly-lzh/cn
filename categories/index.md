@@ -1,5 +1,5 @@
 ---
-title: ·ÖÀà
+title: Categories
 layout: page
 ---
 
