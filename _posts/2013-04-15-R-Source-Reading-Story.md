@@ -174,8 +174,8 @@ substr接受start和stop参数，用来指定子串的开始和结束点，方�
 ###chol.R
 R中chol的具体实现是交给Fortran实现的，暂时未看具体实现代码。这里仅对一些常用的矩阵分解做介绍，这里的讨论仅限于实数域。
 
-Cholesky分解,对一个实对称正定方阵进行分解 A = U^t * U,
-其中U为一个下三角阵，U'是对U的转置。下面是一个简单的chol的R代码实现。
+Cholesky分解,对一个实对称正定方阵进行分解 A = L^t * L,
+其中L为一个下三角阵，L^t是对U的转置。下面是一个简单的chol的R代码实现。
 {%highlight python %}
 ###参数x必须是一个实对称正定阵，返回一个上三角阵
 chol_demo <- function(x){
@@ -196,7 +196,7 @@ chol_demo <- function(x){
   }
 }
 {% endhighlight %}
-脚本里面的另一个方法chol2inv，按照chol.R的定义A=L'*L,其中L为上三角阵。那么chol2inv做的事情就如下：chol2inv(L) = A^(-1),即chol2inv根据L求得A的逆。
+脚本里面的另一个方法chol2inv，按照chol.R的定义A=L^t * L,其中L为上三角阵。那么chol2inv做的事情就如下：chol2inv(L) = A^-1 ,即chol2inv根据L求得A的逆。
 
 -----
 [r-lang]: http://cran.r-project.org/doc/manuals/R-lang.html
