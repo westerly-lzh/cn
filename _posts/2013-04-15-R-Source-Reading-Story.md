@@ -12,6 +12,7 @@ tags:
 
 开始学习R，从阅读源码开始吧。
 不得不说R的语法很让人费解。虽然有[r-language][r-lang]文档作为辅助说明，但还是让熟悉Java，Python等语言的程序员无法理解R中那些让人不得不吐槽的语法，个人觉得，如果R的语法能如MathLab那样，那么R将会有更多的受众。
+
 ---
 ##1.base
 ---
@@ -176,7 +177,7 @@ R中chol的具体实现是交给Fortran实现的，暂时未看具体实现代�
 Cholesky分解,对一个实对称正定方阵进行分解 A = U*U',
 其中U为一个下三角阵，U'是对U的转置。下面是一个简单的chol的R代码实现。
 {%highlight python %}
-参数x必须是一个实对称正定阵，返回一个上三角阵
+###参数x必须是一个实对称正定阵，返回一个上三角阵
 chol_demo <- function(x){
   if(is.matrix(x)){
     d <- dim(x)
