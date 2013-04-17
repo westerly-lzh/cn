@@ -10,8 +10,6 @@ tags:
 ---
 
 
-R Source Reading Story
----
 开始学习R，从阅读源码开始吧。
 不得不说R的语法很让人费解。虽然有[r-language][r-lang]文档作为辅助说明，但还是让熟悉Java，Python等语言的程序员无法理解R中那些让人不得不吐槽的语法，个人觉得，如果R的语法能如MathLab那样，那么R将会有更多的受众。
 ---
@@ -198,6 +196,7 @@ chol_demo <- function(x){
 }
 {% endhighlight %}
 脚本里面的另一个方法chol2inv，按照chol.R的定义A=L'*L,其中L为上三角阵。那么chol2inv做的事情就如下：chol2inv(L) = A^(-1),即chol2inv根据L求得A的逆。
+
 -----
 [r-lang]: http://cran.r-project.org/doc/manuals/R-lang.html
 [bessel]: http://zh.wikipedia.org/wiki/贝塞尔函数
