@@ -1,6 +1,6 @@
 ---
 layout: post
-title: R代码阅读随笔
+title: R代码阅读随笔[01]
 categories:
 - R
 tags:
@@ -171,13 +171,13 @@ substr接受start和stop参数，用来指定子串的开始和结束点，方�
 
 上面代码返回的结果时这样计算出来的，首先把start和last转变成等长vector，具体的如何转变，参照[r-lang][r-lang]中Recycling-rules这一小节。然后依次按照start和stop中元素位置顺序从字符串中取出start和stop的位置之间的字串。当然，代码中并不是像我上面说的这样子实现的，代码中是把字符串rep后再像substr那样子处理的。其本质区别就在于substring中对字符串进行了rep处理，而substr中没有进行。
 其中的abbreviate方法，不能算是一个可以得到很好结果的方法，毕竟在英语中缩写的规律并不是有很明了的规定。
-###chol.R
+####chol.R
 R中chol的具体实现是交给Fortran实现的，暂时未看具体实现代码。这里仅对一些常用的矩阵分解做介绍，这里的讨论仅限于实数域。
 
 Cholesky分解,对一个实对称正定方阵进行分解 A = L^t * L,
 其中L为一个上三角阵，L^t 是对L的转置。下面是一个简单的chol的R代码实现。
 {%highlight python %}
-###参数x必须是一个实对称正定阵，返回一个上三角阵
+####参数x必须是一个实对称正定阵，返回一个上三角阵
 chol_demo <- function(x){
   if(is.matrix(x)){
     d <- dim(x)
@@ -197,6 +197,38 @@ chol_demo <- function(x){
 }
 {% endhighlight %}
 脚本里面的另一个方法chol2inv，按照chol.R的定义A=L^t * L,其中L为上三角阵。那么chol2inv做的事情就如下：chol2inv(L) = A^-1 ,即chol2inv根据L求得A的逆。
+####colSums.R
+包含colSums,rowSums,colMeans,rowMeans四个方法，对数组或者矩阵按行或者按列求和与求均值。这些操作是可以通过使用apply，FUN参数指定为mean或者sum，对MARGIN参数相应的值就可以得到相同的结果，但，明显colSums.R中的方法更易于使用，文档中也说了速度更快。
+####conditions.R
+R提供的一套异常处理机制，没看明白文档说明。等以后慢慢来吧。
+####conflicts.R
+检验所给的搜索路径中，有没有命名重复的变量（包括函数名）.在这里脚本文件中突然明白了一个问题，之前在看代码中有遇到类似var[[i]]这样的下标取值方式，现在才明白，是怎么一回事var为一个向量（vector），那么var中的元素类型时要求保持一致的，比如var中的第一个元素为list类型，那么要获取这个list类型的元素，我们可以通过var[[i]]来取得，这样如果想获得var中第i个元素(假定类型为list)的第j个元素我们可以这样获取var[[i]][[j]].但是，我们通过var[i]
+var[i][j]或者var[i][[j]]甚至var[i][j][j][j][j][j]...（很多个[j]）这样子来求值，R中并不会出错，这是让人很费解的。也许R的语言规范还是不够规范吧，不像Java有专门的specification来严谨的定义语言的特性。
+####connections.R
+采用Java中的概念，这个脚本中定义了输入输出流的操作，当然这里的connection还包括网络连接。
+通用的，像这种系统资源(如文件，socket)，在使用是必须要包括open，use和close这三个阶段的。这里也提供了一些方法来查看当前已经建立的connections。
+####constants.R
+提供了常量的定义，如英文字符，月份
+###contributors.R
+提供了R的贡献者信息。
+####converters.R
+用来把R对象转换成C的指针，不过已被废弃。
+####cut.R
+把一个向量通过指定的breaks参数分割成区间（以factor形式），返回的结果是向量中每个元素所在的区间的factor。需要注意的是labels的数量和breaks指定的区间数量必须相等（而不是和breaks参数的元素数目相等）。如
+>x <- seq_len(10)
+>
+>cut(x,breaks=c(0,13,16),labels=c("A","B"))
+
+这里需要注意breaks=c(0,13,16)，实际上指定了两个区间（0,13],(13,16]所以labels中也只有两个元素。
+但该方法如下时:
+>cut(x,breaks=as.vector(c(1,13,16)),labels=c(FALSE,FALSE))
+>
+>cut(x,breaks=as.vector(c(1,13,16)),labels=c(TRUE,TRUE))
+
+返回的结果却是形式上不一致的。而且下面的语句执行时有警告说时factor有重复，但是上面的同样是factor有重复却没有警告。
+
+
+
 
 -----
 [r-lang]: http://cran.r-project.org/doc/manuals/R-lang.html

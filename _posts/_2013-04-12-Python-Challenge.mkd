@@ -1,0 +1,13 @@
+---
+layout: post
+title: Python Challenge
+categories:
+- Python
+tags:
+- python,challenge
+---
+之前在网上看到一个学习Python的网站[Python Challenge][python-challenge]，看网上的评价，随着难度增大，很多人表示还是挺有意思的。而我这一段时间也是在自学Python，谁让它比较善于干“脏活累活”呢，所以我也想尝试下，针对每个挑战的解决方案准备记录在这里
+
+
+----
+[python-challenge]: http://www.pythonchallenge.com/
