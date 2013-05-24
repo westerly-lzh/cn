@@ -414,7 +414,7 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 
 ###使用LocationManager
 
-{% highlight python %}
+{% highlight c %}
 //Standard Location Service
 //----------------------
 Create a new location manager
