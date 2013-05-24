@@ -70,7 +70,7 @@ typedef double CLLocationSpeed;
 typedef double CLLocationDirection;
 
 * 定义了以度为单位的方向类型，取值范围为0~359.9，不允许负值。
-* 
+
 {% highlight c %}
 typedef struct {
 	CLLocationDegrees latitude;
@@ -412,7 +412,32 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 * 告知代理，以上事件有发生，以便做相应处理。
 
 
+###使用LocationManager
 
+{% highlight c %}
+//Standard Location Service
+//----------------------
+Create a new location manager
+locationManager = [[CLLocationManager alloc] init];
+
+// Set Location Manager delegate
+[locationManager setDelegate:self];
+
+// Set location accuracy levels
+[locationManager setDesiredAccuracy:kCLLocationAccuracyKilometer];
+
+// Update again when a user moves distance in meters
+[locationManager setDistanceFilter:500];
+
+// Configure permission dialog
+[locationManager setPurpose:@"My Custom Purpose Message..."];
+
+// Start updating location
+[locationManager startUpdatingLocation];
+
+{% endhighlight %}
+
+更多如何视同CLLocationManager指导，请参见[iOS 5 Core Frameworks: Core Location and Map Kit][core-location-and-map-kit],这里就不做详细介绍。
 
 
 
@@ -421,3 +446,4 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 [tesla]: https://zh.wikipedia.org/wiki/特斯拉
 [wgs84]: http://baike.baidu.cn/view/740401.htm
 [location-class-ref]: http://developer.apple.com/library/ios/#documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html
+[core-location-and-map-kit]: http://www.peachpit.com/articles/article.aspx?p=1830485
