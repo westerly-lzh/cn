@@ -14,7 +14,7 @@ tags:
 在Apple开发中，尤其是移动设备开发，经常会使用Core Location Framework，这个框架可以使得iOS设备获取当前的地理位置。本文就具体到Core Location 框架中，查看其声明源码。
 
 ###CLHeading.h
-代表了一个可以通过(x,y,z)三维空间坐标确定磁北极位置的向量。精确的Heading定位，同时也需要时间信息(即通过空间加时间四维坐标来确定位置)
+代表了一个可以通过(x,y,z)三维空间坐标确定磁北极位置的向量。精确的Heading(方位)定位，同时也需要时间信息(即通过空间加时间四维坐标来确定位置)
 
 typedef double CLHeadingComponentValue;
 
@@ -22,11 +22,11 @@ typedef double CLHeadingComponentValue;
 
 extern const CLLocationDegrees kCLHeadingFilterNone
 
-* CLLocationManager用作为Heading信息的过滤标志，表明不需要过滤最小移动量，用户的任何移动都会被通知。
+* CLLocationManager用作为方位信息的过滤标志，表明不需要过滤最小移动量，用户的任何移动都会被通知。
 
 @property(readonly, nonatomic) CLLocationDirection magneticHeading;
 
-* 以度数来代表方向，0度代表磁北极，方向是参照设备的上部方向，不考虑设备的摆放方向，也不考虑用户的面对方向。
+* 以度数来代表方向，0度代表磁北极方位，方向是参照设备的上部方向，不考虑设备的摆放方向，也不考虑用户的面对方向。
 * 度数的范围为0~359.9
 
 @property(readonly, nonatomic) CLLocationDirection trueHeading;
@@ -275,7 +275,7 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 
 +(BOOL)headingAvailable;
 
-* 如果设备支持heading service(即设备能否返回heading service data)则返回YES，否则返回NO。
+* 如果设备支持方位服务(即设备能否返回方位数据)则返回YES，否则返回NO。
 
 +(BOOL)significantLocationChangeMonitoringAvailable;
 
@@ -321,11 +321,11 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 
 @property(assign, nonatomic) CLDeviceOrientation headingOrientation ;
 
-* 指定设备的heading朝向参照方向，默认是参照设备的向上方向，但如果应用的布局方向在其他方向上，那么通过设置headingOrientation可以指定heading的参照方向。
+* 指定设备的方位朝向参照方向，默认是参照设备的向上方向，但如果应用的布局方向在其他方向上，那么通过设置headingOrientation可以指定heading的参照方向。
 
 @property(readonly, nonatomic) CLHeading *heading;
 
-*返回最近一次的heading信息。
+*返回最近一次的方位信息。
 
 @property (readonly, nonatomic) CLLocationDistance maximumRegionMonitoringDistance;
 
@@ -383,12 +383,12 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading ;
 
-*告知代理，heading信息已经被位置管理器更新，如果位置管理器有使用startUpdateingHeading这个方法，则应当实现本方法。
+*告知代理，方位信息已经被位置管理器更新，如果位置管理器有使用startUpdateingHeading这个方法，则应当实现本方法。
 
 
 -(BOOL)locationManagerShouldDisplayHeadingCalibration:(CLLocationManager *)manager;
 
-* 询问代理是否Heading校准警告是否需要显示，当有新的Heading信息时调用该方法，如否有需要显示Heading校准信息，则返回YES
+* 询问代理是否方位校准警告是否需要显示，当有新的Heading信息时调用该方法，如否有需要显示Heading校准信息，则返回YES
 
 -(void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region ;
 
