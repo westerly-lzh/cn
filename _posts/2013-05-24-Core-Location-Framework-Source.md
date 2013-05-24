@@ -437,7 +437,7 @@ locationManager = [[CLLocationManager alloc] init];
 
 {% endhighlight %}
 
-更多如何视同CLLocationManager指导，请参见[iOS 5 Core Frameworks: Core Location and Map Kit][core-location-and-map-kit],这里就不做详细介绍。
+更多如何使用CLLocationManager指导，请参见[iOS 5 Core Frameworks: Core Location and Map Kit][core-location-and-map-kit],这里就不做详细介绍。
 
 
 
