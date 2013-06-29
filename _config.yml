@@ -1,4 +1,4 @@
-markdown: rdiscount
+markdown: kramdown
 permalink: /:year/:month/:title/
 url: http://jeff-lee.name/cn
 author: Jeff Lee
