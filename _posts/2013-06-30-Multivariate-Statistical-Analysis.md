@@ -16,16 +16,22 @@ tags:
 ######1.1 线性判别
 线性判别采用线性判别函数，这里建立的线性判别函数为Y = a_1 X_1 + a_2 X_2 + … + a_n X_n ,使得该函数可以根据样本的不同指标(X_i)来区分样本。在该线性判别函数中重要的是求得判别函数的系数，使得在同组内部的变异尽可能的小，而不同组之间的变异尽可能的大，这里的系数也就是Fisher判别方法中的投影方向。在R中我们可以使用MASS包中的lda函数来进行线性判别分析。取得判别结果后，我们可以使用样品的真是分类和预测分类进行列链表分析，在使用lda时，其结果中线性判别系数(Coefficients of linear discriminants)一项，可能出现多组，而(Proportion trace)一项则指明了每一组线性判别系数在对样本进行分组判别时的贡献大小。
 
-``` 
-data(iris) 
-ld <- lda(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width,data=iris)
-ld ##查看判别效果
-z <- predict(ld)
-cbind(iris$Species,z$class) ##对比实际类型和判别分类
-tab <- table(iris$Species,z$class) ##列链表显示判别结果
-tab
-diag(prop.table.table(tab,1))
-```
+``` data(iris)```
+
+```ld <- lda(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width,data=iris)```
+
+```ld ##查看判别效果```
+
+```z <- predict(ld)```
+
+```cbind(iris$Species,z$class) ##对比实际类型和判别分类```
+
+```tab <- table(iris$Species,z$class) ##列链表显示判别结果```
+
+```tab```
+
+```diag(prop.table.table(tab,1))```
+
 在做判别分析中，要始终牢记样本集中样本的指标是否等方差，及协方差阵是否相同；不同的方差和协方差，在使用lda时，如果没有指明，其判别结果会有不同。
 
 ######1.2 距离判别
