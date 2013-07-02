@@ -72,7 +72,10 @@ Bayes判别相比较前面的线性判别和距离判别，考虑了各个总体
 
 下面以R中iris数据集为例：
 
-	d <- dist(cbind(iris$Sepal.Length,iris$Sepal.Width,iris$Petal.Length,iris$Petal.Width),method='minkowski',p=2)	hc <- hclust(d,method="centroid")	plot(hc)
+	d <- dist(cbind(iris$Sepal.Length,iris$Sepal.Width,iris$Petal.Length,iris$Petal.Width),method='minkowski',p=2)
+	
+	hc <- hclust(d,method="centroid")
+		plot(hc)
 
 
 #####2.2 快速聚类法（kmeans聚类法）
