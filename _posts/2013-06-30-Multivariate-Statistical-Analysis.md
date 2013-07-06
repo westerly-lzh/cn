@@ -170,9 +170,29 @@ R帮助文档中强调：
 9. 计算因子综合得分
 10. 利用综合得分来排序
 
+####5 典型相关分析（Canonical Correlation Analysis）
+
+多元线性回归中，是一组解释变量和一个反应变量之间的关系，而典型相关分析是一组解释变量与一组反应变量之间的关系。典型相关的具体实施方法是，在两组变量中各找一个代表，即各自变量的线性组合，使得这一对代表比其他对的代表更加相关，然后在两组变量与这一对代表正交的空间中再找另一对最相关的代表，如此下去，找到找不出符合条件的代表(复杂数据统计方法--基于R的应用，吴喜之).
+
+在R中自带的实现典型相关分析的函数是cancor,使用如下
+
+	co <- cancor(iris[,1:2],iris[,3:4])
+	co$cor #典型相关系数
+	co$xcoef # 对应X的系数
+	co$ycoef # 对应Y的系数
+	co$xcenter #X的中心，即样本均值
+	co$ycenter #Y的中心，即样本均值
+
+我们也可以使用CCA包中提供的做典型相关分析的函数
+
+	library(CCA)
+	data(nutrimouse)	X <- as.matrix(nutrimouse$gene[,1:10])	Y <- as.matrix(nutrimouse$lipid)	res.cc <- cc(X,Y)	plot(res.cc$cor,type="b")	plot.cc(res.cc)
 
 
+<!--
 
+####6 对应分析(Correspondence Analysis)-->	
+	
 
 
 
