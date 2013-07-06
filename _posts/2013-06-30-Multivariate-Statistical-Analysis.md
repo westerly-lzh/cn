@@ -186,7 +186,12 @@ R帮助文档中强调：
 我们也可以使用CCA包中提供的做典型相关分析的函数
 
 	library(CCA)
-	data(nutrimouse)	X <- as.matrix(nutrimouse$gene[,1:10])	Y <- as.matrix(nutrimouse$lipid)	res.cc <- cc(X,Y)	plot(res.cc$cor,type="b")	plot.cc(res.cc)
+	data(nutrimouse)
+	X <- as.matrix(nutrimouse$gene[,1:10])
+	Y <- as.matrix(nutrimouse$lipid)
+	res.cc <- cc(X,Y)
+	plot(res.cc$cor,type="b")
+	plot.cc(res.cc)
 
 
 <!--
