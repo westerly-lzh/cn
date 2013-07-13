@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 新版Eclipse集成业务流程组间
+title: 新版Eclipse集成业务流程组件
 categories:
 - Java
 tags:
