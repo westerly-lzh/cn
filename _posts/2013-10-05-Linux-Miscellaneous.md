@@ -2,9 +2,9 @@
 layout: post
 title: Linux杂记
 categories:
--Linux
+- Linux
 tags:
--Linux
+- Linux
 
 ---
 现在已经算是全面转到ubuntu上了，当然除了可恨的国内银行还死守着基于IE的网上在线交易，让我唯一无法彻底抛弃windows。
