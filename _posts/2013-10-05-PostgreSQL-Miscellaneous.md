@@ -48,22 +48,22 @@ tags:
 
     select distinct id ,count(*) from questions group by id having count(*) > 1;
  
-id  | count
-----|------
-1   | 4
-2   | 2
+    id  | count
+    ----|------
+    1   | 4
+    2   | 2
 
 查找要保留的数据
 
     select ctid,* from questions where ctid in (select min(ctid) from questions group by id);
 
-ctid | id | name
------|----|-----
-(0,1)| 1  | a
-(0,5)| 2  | b
-(0,7)| 3  | c
-(0,8)| 4  | d
-(0,9)| 5  | e
+    ctid | id | name
+    -----|----|-----
+    (0,1)| 1  | a
+    (0,5)| 2  | b
+    (0,7)| 3  | c
+    (0,8)| 4  | d
+    (0,9)| 5  | e
     
 删除重复数据
 
