@@ -33,7 +33,7 @@ tags:
     select ctid,* from questions;
     
 ctid | id | name
------+----+-----
+-----|----|-----
 (0,1)| 1  | a
 (0,2)| 1  | a
 (0,3)| 1  | a
@@ -49,7 +49,7 @@ ctid | id | name
     select distinct id ,count(*) from questions group by id having count(*) > 1;
  
 id  | count
-----+------
+----|------
 1   | 4
 2   | 2
 
@@ -58,7 +58,7 @@ id  | count
     select ctid,* from questions where ctid in (select min(ctid) from questions group by id);
 
 ctid | id | name
------+----+-----
+-----|----|-----
 (0,1)| 1  | a
 (0,5)| 2  | b
 (0,7)| 3  | c
