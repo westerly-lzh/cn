@@ -1,1 +1,7 @@
-_site/
+.Rhistory
+.directory
+.gitignore
+
+_posts/*.html
+_posts/.Rhistory
+_posts/.directory
