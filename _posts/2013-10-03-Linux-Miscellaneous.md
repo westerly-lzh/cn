@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Linux杂记
+title: OS杂记[2]
 categories:
 - Linux
 tags:
