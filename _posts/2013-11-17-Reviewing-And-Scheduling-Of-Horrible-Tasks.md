@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Reviewing And Scheduling of Horrible Tasks
+title:  Reviewing And Scheduling Of Horrible Tasks
 categories:
 - Work
 tags:
