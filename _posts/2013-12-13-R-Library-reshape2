@@ -1,6 +1,6 @@
 ---
 layout: post
-title: R数据重塑：reshape2 学习[1]
+title: R数据重塑：reshape2 学习[2]
 categories:
 - R
 tags:
