@@ -2,9 +2,10 @@
 layout: post
 title: 最终还是用上了Github
 categories:
-- github
+- IT
 tags:
-- github ubuntu
+- github
+
 ---
 
 折腾了好久总算在github上建起了站点，不过我这个站点建的有点厚颜无耻，照搬的[yihui](http://yihui.name)的站点模板，而且在遇到不明白的地方时还忝者脸皮发邮件去问他。在这个过程中遇到了一些问题，现在就分享下。

@@ -2,10 +2,9 @@
 layout: post
 title: R数据重塑：reshape2 学习[1]
 categories:
-- R
+- IT
 tags:
 - R
-- reshape2
 
 ---
 在数据分析中，经常需要对原始数据进行重塑，在R中对数据进行重塑，可以使用reshape包，也可以使用reshape2，reshape2是对reshape的重构，这里介绍reshape2中方法的使用及其功能

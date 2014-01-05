@@ -2,11 +2,9 @@
 layout: post
 title: 简单回归分析
 categories:
-- Statistic
 - 统计
 tags:
-- 回归
-- 简单回归分析
+- 回归分析
 
 ---
 对于R做统计分析，由于自己不是科班出身，所以学的有些乱，这里就做一些总结。这里主要介绍下在R中如何使用OLS(最小二乘法)回归法。该部分内容出自R in Action。

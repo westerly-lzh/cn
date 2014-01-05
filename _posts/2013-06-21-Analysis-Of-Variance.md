@@ -2,7 +2,6 @@
 layout: post
 title: 方差分析
 categories:
-- Statistic
 - 统计
 tags:
 - 方差分析

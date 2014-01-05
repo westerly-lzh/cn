@@ -5,8 +5,6 @@ categories:
 - OS
 tags:
 - Linux
-- Mac
-- Windows
 
 ---
 

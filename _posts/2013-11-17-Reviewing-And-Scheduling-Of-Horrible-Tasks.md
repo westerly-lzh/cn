@@ -2,7 +2,7 @@
 layout: post
 title:  Reviewing And Scheduling Of Horrible Tasks
 categories:
-- Work
+- IT
 tags:
 - 生活
 - Mining

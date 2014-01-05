@@ -2,10 +2,9 @@
 layout: post
 title: PostgreSQL杂记
 categories:
-- PostgreSQL
+- IT
 tags:
 - SQL
-- PostgreSQL
 
 ---
 

@@ -2,7 +2,7 @@
 layout: post
 title: OS杂记[4]
 categories:
-- Ubuntu
+- OS
 tags:
 - Ubuntu
 - at

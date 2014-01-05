@@ -2,12 +2,8 @@
 layout: post
 title: 新版Eclipse集成业务流程组件
 categories:
-- Java
+- IT
 tags:
-- Eclipse
-- Kepler
-- Workflow
-- 业务流程
 - 工作流
 
 ---

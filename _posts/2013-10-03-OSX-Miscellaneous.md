@@ -2,11 +2,9 @@
 layout: post
 title:  OS杂记[3]
 categories:
-- MAC
+- OS
 tags:
-- OS X
-- Eclispe
-- Mavericks
+- Mac
 
 ---
 

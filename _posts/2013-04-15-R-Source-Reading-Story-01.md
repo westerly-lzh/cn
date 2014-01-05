@@ -2,11 +2,9 @@
 layout: post
 title: R代码阅读随笔[01]
 categories:
-- R
+- IT
 tags:
 - R
-- 源码
-- 随笔
 
 ---
 

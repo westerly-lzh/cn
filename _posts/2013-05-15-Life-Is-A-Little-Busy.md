@@ -2,11 +2,8 @@
 layout: post
 title: 最近有点忙
 categories:
-- Life
 - 生活
 tags:
-- life
-- Life
 - 生活
 
 ---

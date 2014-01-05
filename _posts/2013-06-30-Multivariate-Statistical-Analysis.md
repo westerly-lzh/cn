@@ -2,7 +2,6 @@
 layout: post
 title: R语言统计分析学习系列之多元统计分析
 categories:
-- statistic
 - 统计
 tags:
 - 多元分析

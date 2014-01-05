@@ -2,10 +2,9 @@
 layout: post
 title: OS杂记[3]
 categories:
-- Ubuntu
+- OS
 tags:
-- Ubuntu
-- Checking Battery...
+- Linux
 
 ---
 昨天我的Ubuntu卡在了启动画面上了。当时就慌了，还以为是KDE出什么问题了。现在总结一下事情的来龙去脉。

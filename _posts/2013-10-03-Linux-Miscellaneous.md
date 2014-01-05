@@ -2,7 +2,7 @@
 layout: post
 title: OS杂记[2]
 categories:
-- Liunux
+- OS
 tags:
 - Linux
 

@@ -2,12 +2,9 @@
 layout: post
 title: Core Location Framework学习
 categories:
-- Mac
+- IT
 tags:
 - Mac
-- IT
-- 定位
-- Geo
 
 ---
 

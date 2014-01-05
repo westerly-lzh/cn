@@ -5,7 +5,6 @@ categories:
 - 生活
 
 tags:
-- life
 - 生活
 
 ---
