@@ -9,7 +9,8 @@ tags:
 ---
 在数据分析中，经常需要对原始数据进行重塑，在R中对数据进行重塑，可以使用reshape包，也可以使用reshape2，reshape2是对reshape的重构，这里介绍reshape2中方法的使用及其功能。
 
-##colsplit(string, pattern, names)
+##colsplit
+###colsplit(string, pattern, names)
 * string，将会被分解的因子或者字符向量
 * pattern，分解规则的正则表达式
 * names，分解后产生的向量的列名。
@@ -24,7 +25,8 @@ tags:
     2  B   b
     3  C   c
    
-##acast(data,formula,fun.aggregate,margins,subset,fill,drop,value.var,...)
+##acast
+###acast(data,formula,fun.aggregate,margins,subset,fill,drop,value.var,...)
 
 * data, 输入需要被转换的数据，该数据是melt函数的返回结果
 * formula, 指定数据转换的模式，

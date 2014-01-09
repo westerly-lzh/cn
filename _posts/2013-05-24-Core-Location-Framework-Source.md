@@ -10,7 +10,7 @@ tags:
 
 在Apple开发中，尤其是移动设备开发，经常会使用Core Location Framework，这个框架可以使得iOS设备获取当前的地理位置。本文就具体到Core Location 框架中，查看其声明源码。
 
-###CLHeading.h
+##CLHeading.h
 代表了一个可以通过(x,y,z)三维空间坐标确定磁北极位置的向量。精确的Heading(方位)定位，同时也需要时间信息(即通过空间加时间四维坐标来确定位置)
 
 typedef double CLHeadingComponentValue;
@@ -47,7 +47,7 @@ extern const CLLocationDegrees kCLHeadingFilterNone
 * 分别代表了三维空间位置坐标和时间坐标。
 
 
-###CLLocation.h
+##CLLocation.h
 
 代表带有精度和时间信息的地理坐标。
 
@@ -169,7 +169,7 @@ CLLocationCoordinate2D CLLocationCoordinate2DMake(CLLocationDegrees latitude, CL
 * 返回两个位置间的横向位置(应当是欧氏距离吧)。
 
 
-###CLRegion.h
+##CLRegion.h
 
 定义了区域类型，但在现在的版本中，只支持圆形区域(是通过区域中心坐标和区域半径实现)。区域半径以米为单位。
 
@@ -190,7 +190,7 @@ CLLocationCoordinate2D CLLocationCoordinate2DMake(CLLocationDegrees latitude, CL
 
 * 判断一个坐标点是否在该区域内部。
 
-###CLPlacemark.h
+##CLPlacemark.h
 
 代表了一个地理位置上的地方信息，这些地区信息，可以是国家，州，城市和街道名称。
 
@@ -237,7 +237,7 @@ CLLocationCoordinate2D CLLocationCoordinate2DMake(CLLocationDegrees latitude, CL
 
 * 以上为地址信息。
 
-###CLGeocoder.h
+##CLGeocoder.h
 地理位置编码器。
 
 typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
@@ -262,7 +262,7 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 
 * 取消当前解码请求。
 
-###CLLocationManager.h
+##CLLocationManager.h
 
 位置管理器，用来接入定位服务。可以参照[CLLocationManager Class Reference][location-class-ref]来了解该类的功能定义。
 
@@ -371,7 +371,7 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 
 * 表明设备是否支持延迟更新。
 
-###CLLocationManagerDelegate.h
+##CLLocationManagerDelegate.h
 
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations ;
@@ -409,7 +409,7 @@ typedef void (^CLGeocodeCompletionHandler)(NSArray *placemarks, NSError *error);
 * 告知代理，以上事件有发生，以便做相应处理。
 
 
-###使用LocationManager
+##使用LocationManager
 
 {% highlight c %}
 //Standard Location Service

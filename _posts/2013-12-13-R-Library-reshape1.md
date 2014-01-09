@@ -9,7 +9,8 @@ tags:
 ---
 在数据分析中，经常需要对原始数据进行重塑，在R中对数据进行重塑，可以使用reshape包，也可以使用reshape2，reshape2是对reshape的重构，这里介绍reshape2中方法的使用及其功能
 
-##add_margins(df,vars,margins=TRUE)
+##add_margins
+###add_margins(df,vars,margins=TRUE)
 * df，将要被重塑的数据框
 
 * vars，df中的列名list,
