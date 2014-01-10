@@ -2,7 +2,7 @@
 layout: post
 title: DM--多项分布
 categories:
-- DM
+- 统计
 tags:
 - 多项分布
 
