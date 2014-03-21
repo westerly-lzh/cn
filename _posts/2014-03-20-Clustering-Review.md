@@ -1,4 +1,15 @@
-聚类算法的种类 |
+---
+layout: post
+title: 聚类综述
+categories:
+- DM
+tags:
+- Clustering
+
+---
+
+
+聚类算法的种类 :
 
 
 基于划分聚类算法（partition clustering)

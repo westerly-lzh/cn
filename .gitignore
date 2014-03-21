@@ -1,6 +1,7 @@
 .Rhistory
 .directory
 .gitignore
+.DS_Store
 
 _posts/*.html
 _posts/.Rhistory
