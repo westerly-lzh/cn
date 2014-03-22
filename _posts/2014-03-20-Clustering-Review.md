@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 聚类综述
+title: 聚类综述(转)
 categories:
 - DM
 tags:
