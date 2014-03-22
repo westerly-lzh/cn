@@ -10,4 +10,4 @@ tags:
 ---
 实验设计时，对应的数据形态及其适应的检验方法：
 
-![alt text](/media/test.png "统计检验设计")
+![alt text](/media/img/test.png "统计检验设计")
