@@ -46,5 +46,9 @@ tags:
     	* gofnorm采用13种方法进行检验，并输出结果。
     	
 ## 方差齐次性检验
- 
+* Bartlett's Test，在样本为正态性的假设条件下，使用该检验方法。基于此原因，统计学家建议使用下面介绍的 *Levene's Test* 和*Brown-Forsythe Test*
+	* R中作Bartlett检验的方法为bartlett.test(x,...)
+
+* Levene's Test，Levene检验主要用于检验两个或两个以上样本间的方差是否齐性。要求样本为随机样本且相互独立。常见的Bartlett多样本方差齐性检验主要用于正态分布的资料,对于非正态分布的数据,检验效果不理想。Levene检验既可以用于正态分布的资料,也可以用于非正态分布的资料或分布不明的资料,其检验效果比较理想。	* R语言中car包有leveneTest(y, …)方法进行该检验,lawstat包中有levene.test()方法* Brown-Forsythe Test
+
 		
