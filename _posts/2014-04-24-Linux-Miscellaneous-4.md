@@ -13,72 +13,73 @@ tags:
 #### PROBLEM
 
 这几天把Ubuntu系统升级到了14.04,中间基本上没有什么问题，但我系统上原有的VMWare却不能运行了，每次想打开VMWare-Workstation，总提示说是有些models需要重新编译，于是就按照提示一步步编译，但在vmnet-adaptor这一步总是出错。
->2014-04-24T20:57:48.429+08:00| vthread-3| I120: Invoking modinfo on "vmnet".
->
->2014-04-24T20:57:48.430+08:00| vthread-3| I120: "/sbin/modinfo" exited with status 256.
->
->2014-04-24T20:57:48.753+08:00| vthread-3| I120: Setting destination path for vmnet to "/lib/modules/3.13.0-24-generic/misc/vmnet.ko".
->
->2014-04-24T20:57:48.753+08:00| vthread-3| I120: Extracting the vmnet source from "/usr/lib/vmware/modules/source/vmnet.tar".
->
->2014-04-24T20:57:48.757+08:00| vthread-3| I120: Successfully extracted the vmnet source.
->
->2014-04-24T20:57:48.757+08:00| vthread-3| I120: Building module with command "/usr/bin/make -j8 -C /tmp/modconfig-sQwsyG/vmnet-only auto-build HEADER_DIR=/lib/modules/3.13.0-24-generic/build/include CC=/usr/bin/gcc IS_GCC_3=no"
->
->2014-04-24T20:57:50.165+08:00| vthread-3| W110: Failed to build vmnet.  Failed to execute the build command.
->
->root@jeff-pc:/tmp/vmware-root# /usr/bin/make -j8 -C /tmp/modconfig-sQwsyG/vmnet-only auto-build HEADER_DIR=/lib/modules/3.13.0-24-generic/build/include CC=/usr/bin/gcc IS_GCC_3=no
->
->Using 2.6.x kernel build system.
->
->make: Entering directory `/tmp/modconfig-sQwsyG/vmnet-only'
->
->/usr/bin/make -C /lib/modules/3.13.0-24-generic/build/include/.. SUBDIRS=$PWD SRCROOT=$PWD/. \
->
->          MODULEBUILDDIR= modules
->
->make[1]: Entering directory `/usr/src/linux-headers-3.13.0-24-generic'
->
->  CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/filter.o
->
->  CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/smac.o
->
->  CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/vnetEvent.o
->
->  CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/vnetUserListener.o
->
->/tmp/modconfig-sQwsyG/vmnet-only/filter.c:206:1: error: conflicting types for ‘VNetFilterHookFn’
->
-> VNetFilterHookFn(unsigned int hooknum,                 // IN:
->
-> ^
->
->/tmp/modconfig-sQwsyG/vmnet-only/filter.c:64:18: note: previous declaration of ‘VNetFilterHookFn’ was here
->
-> static nf_hookfn VNetFilterHookFn;
->
->                  ^
->
->/tmp/modconfig-sQwsyG/vmnet-only/filter.c:64:18: warning: ‘VNetFilterHookFn’ used but never defined [enabled by default]
->
->/tmp/modconfig-sQwsyG/vmnet-only/filter.c:206:1: warning: ‘VNetFilterHookFn’ defined but not used [-Wunused-function]
->
-> VNetFilterHookFn(unsigned int hooknum,                 // IN:
->
-> ^
->
->make[2]: *** [/tmp/modconfig-sQwsyG/vmnet-only/filter.o] Error 1
->
->make[2]: *** Waiting for unfinished jobs....
->
->make[1]: *** [_module_/tmp/modconfig-sQwsyG/vmnet-only] Error 2
->
->make[1]: Leaving directory `/usr/src/linux-headers-3.13.0-24-generic'
->
->make: *** [vmnet.ko] Error 2
->
->make: Leaving directory `/tmp/modconfig-sQwsyG/vmnet-only'
->
+> 
+> 2014-04-24T20:57:48.429+08:00| vthread-3| I120: Invoking modinfo on "vmnet".
+> 
+> 2014-04-24T20:57:48.430+08:00| vthread-3| I120: "/sbin/modinfo" exited with status 256.
+> 
+> 2014-04-24T20:57:48.753+08:00| vthread-3| I120: Setting destination path for vmnet to "/lib/modules/3.13.0-24-generic/misc/vmnet.ko".
+> 
+> 2014-04-24T20:57:48.753+08:00| vthread-3| I120: Extracting the vmnet source from "/usr/lib/vmware/modules/source/vmnet.tar".
+> 
+> 2014-04-24T20:57:48.757+08:00| vthread-3| I120: Successfully extracted the vmnet source.
+> 
+> 2014-04-24T20:57:48.757+08:00| vthread-3| I120: Building module with command "/usr/bin/make -j8 -C /tmp/modconfig-sQwsyG/vmnet-only auto-build HEADER_DIR=/lib/modules/3.13.0-24-generic/build/include CC=/usr/bin/gcc IS_GCC_3=no"
+> 
+> 2014-04-24T20:57:50.165+08:00| vthread-3| W110: Failed to build vmnet.  Failed to execute the build command.
+> 
+> root@jeff-pc:/tmp/vmware-root# /usr/bin/make -j8 -C /tmp/modconfig-sQwsyG/vmnet-only auto-build HEADER_DIR=/lib/modules/3.13.0-24-generic/build/include CC=/usr/bin/gcc IS_GCC_3=no
+> 
+> Using 2.6.x kernel build system.
+> 
+> make: Entering directory `/tmp/modconfig-sQwsyG/vmnet-only'
+> 
+> /usr/bin/make -C /lib/modules/3.13.0-24-generic/build/include/.. SUBDIRS=$PWD SRCROOT=$PWD/. \
+> 
+>           MODULEBUILDDIR= modules
+> 
+> make[1]: Entering directory `/usr/src/linux-headers-3.13.0-24-generic'
+> 
+>   CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/filter.o
+> 
+>   CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/smac.o
+> 
+>   CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/vnetEvent.o
+> 
+>   CC [M]  /tmp/modconfig-sQwsyG/vmnet-only/vnetUserListener.o
+> 
+> /tmp/modconfig-sQwsyG/vmnet-only/filter.c:206:1: error: conflicting types for ‘VNetFilterHookFn’
+> 
+>  VNetFilterHookFn(unsigned int hooknum,                 // IN:
+> 
+>  ^
+> 
+> /tmp/modconfig-sQwsyG/vmnet-only/filter.c:64:18: note: previous declaration of ‘VNetFilterHookFn’ was here
+> 
+>  static nf_hookfn VNetFilterHookFn;
+> 
+>                   ^
+> 
+> /tmp/modconfig-sQwsyG/vmnet-only/filter.c:64:18: warning: ‘VNetFilterHookFn’ used but never defined [enabled by default]
+> 
+> /tmp/modconfig-sQwsyG/vmnet-only/filter.c:206:1: warning: ‘VNetFilterHookFn’ defined but not used [-Wunused-function]
+> 
+>  VNetFilterHookFn(unsigned int hooknum,                 // IN:
+> 
+>  ^
+> 
+> make[2]: *** [/tmp/modconfig-sQwsyG/vmnet-only/filter.o] Error 1
+> 
+> make[2]: *** Waiting for unfinished jobs....
+> 
+> make[1]: *** [_module_/tmp/modconfig-sQwsyG/vmnet-only] Error 2
+> 
+> make[1]: Leaving directory `/usr/src/linux-headers-3.13.0-24-generic'
+> 
+> make: *** [vmnet.ko] Error 2
+> 
+> make: Leaving directory `/tmp/modconfig-sQwsyG/vmnet-only'
+> 
 
 ####PATCH
 
