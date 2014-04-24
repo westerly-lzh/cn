@@ -13,7 +13,8 @@ tags:
 #### PROBLEM
 
 这几天把Ubuntu系统升级到了14.04,中间基本上没有什么问题，但我系统上原有的VMWare却不能运行了，每次想打开VMWare-Workstation，总提示说是有些models需要重新编译，于是就按照提示一步步编译，但在vmnet-adaptor这一步总是出错。
-> 
+
+
 > 2014-04-24T20:57:48.429+08:00| vthread-3| I120: Invoking modinfo on "vmnet".
 > 
 > 2014-04-24T20:57:48.430+08:00| vthread-3| I120: "/sbin/modinfo" exited with status 256.
@@ -84,6 +85,7 @@ tags:
 ####PATCH
 
 既然发现了是*VNetFilterHookFn*出的问题,那下一步就是先google下怎么回事了。网上给出了一个patch，是/usr/lib/vmware/models/source/vmnet.tar中的filter.c出的问题。该怎样打补丁我不会，但是可以把这个patch中的内容coding到vmnet.tar中的filter.c这个文件中。下面是这个patch的内容：
+
 
 > --- vmnet-only/filter.c 2013-10-18 23:11:55.000000000 +0400
 > 
