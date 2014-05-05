@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  OS杂记[3]
+title:  MAC杂记[1]
 categories:
 - OS
 tags:
