@@ -23,7 +23,7 @@ $$
 
 ## 最小二乘估计
 可以通过定义使得残差最小的$\beta$为最优拟合，则通过求取
- $$\min \sum \varepsilon_i^2 = \varepsilon^T\varepsilon = (y-X\beta)^T(y-X\beta)\\\=y^Ty-2\beta X^Ty+\beta^TX^TX\beta$$,对$\beta$分别求偏导，并设偏导为0，可以得到$\beta$的估计，$$\hat \beta = X(X^TX)^{-1}X^Ty\\\ 预测值: \hat y = X \hat \beta,\\\ 残差： \hat \varepsilon = y - X \hat \beta = (I - X(X^TT)^{-1}X^T)y,\\\残差平方和: \hat \varepsilon ^T \hat \varepsilon = y^T (I - X(X^TT)^{-1}X^T) (I - X(X^TT)^{-1}X^T)y$$
+ $$\min \sum \varepsilon_i^2 = \varepsilon^T\varepsilon = (y-X\beta)^T(y-X\beta)\\\\=y^Ty-2\beta X^Ty+\beta^TX^TX\beta$$,对$\beta$分别求偏导，并设偏导为0，可以得到$\beta$的估计，$$\hat \beta = X(X^TX)^{-1}X^Ty\\\\ 预测值: \hat y = X \hat \beta,\\\\ 残差： \hat \varepsilon = y - X \hat \beta = (I - X(X^TT)^{-1}X^T)y,\\\\残差平方和: \hat \varepsilon ^T \hat \varepsilon = y^T (I - X(X^TT)^{-1}X^T) (I - X(X^TT)^{-1}X^T)y$$
 
 
 ##  拟合效果
@@ -34,4 +34,4 @@ $$
 ## 假设检验
 $$H_0 : \beta_1 = \dots \beta\_{p-1} =0$$
 
-在线性拟合中，如果一个模型$\omega$使用的指标变量$(X)$数目小于小于模型$\Omega$使用的指标变量的数目，且$\omega 的 指标变量集合是\Omega 指标变量集合的子集$，如果两个模型拟合效果比较接近，那么我们倾向于使用小便量集合的模型，那么如何度量这两个模型的的拟合效果的差异程度呢？可以通过定义$$\frac{RSS\{\omega} - RSS\_{\Omega}}{RSS\_{\Omega}}$$这样一个度量来衡量.如果$\Omega$的维度为q，$\omega$的维度为q,则$$\frac{RSS\_\omega - RSS\_\Omega}{q-p} \sim \sigma^2\chi\_{q-p}^2\\\ \frac{RSS\_\Omega}{n-q} \sim \sigma^2\chi_{n-q}$$那么可以定义$F$分布为$$F = \frac{(RSS\_\omega - RSS\_\Omega)/(q-p)}{RSS\_\Omega/(n-p)} \sim F\_{q-p,n-q}$$
+在线性拟合中，如果一个模型$\omega$使用的指标变量$(X)$数目小于小于模型$\Omega$使用的指标变量的数目，且$\omega 的 指标变量集合是\Omega 指标变量集合的子集$，如果两个模型拟合效果比较接近，那么我们倾向于使用小便量集合的模型，那么如何度量这两个模型的的拟合效果的差异程度呢？可以通过定义$$\frac{RSS\{\omega} - RSS\_{\Omega}}{RSS\_{\Omega}}$$这样一个度量来衡量.如果$\Omega$的维度为q，$\omega$的维度为q,则$$\frac{RSS\_\omega - RSS\_\Omega}{q-p} \sim \sigma^2\chi\_{q-p}^2\\\\ \frac{RSS\_\Omega}{n-q} \sim \sigma^2\chi_{n-q}$$那么可以定义$F$分布为$$F = \frac{(RSS\_\omega - RSS\_\Omega)/(q-p)}{RSS\_\Omega/(n-p)} \sim F\_{q-p,n-q}$$
