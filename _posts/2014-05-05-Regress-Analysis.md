@@ -9,15 +9,15 @@ tags:
 ---
 
 ## 线性模型
-一般化的模型可以表示为$$Y=f(X_1,X_2,X_3)+\varepsilon$$ 但当$f$较为复杂时，通过数据是很难对其进行较为直接准确地预测的，于是通过增加更加严格的条件，把$f$限制为一次线性结构，可以得到$$Y=\beta_0 + \beta_1X_1+\beta_2X_2+\beta_3X_3+ \dots +\varepsilon$$,当给定对应模型的实际数据时，模型的样式为$$y_i = \beta_0 + \beta_1x_{1i} +\beta_2x_{2i} + \beta_3x_{3i}+\varepsilon_i$$ 采用矩阵形式可以表示为$$y=X\beta + \varepsilon$$其中 
+一般化的模型可以表示为$$Y=f(X_1,X_2,X_3)+\varepsilon$$ 但当$f$较为复杂时，通过数据是很难对其进行较为直接准确地预测的，于是通过增加更加严格的条件，把$f$限制为一次线性结构，可以得到$$Y=\beta_0 + \beta_1X_1+\beta_2X_2+\beta_3X_3+ \dots +\varepsilon$$,当给定对应模型的实际数据时，模型的样式为$$y_i = \beta_0 + \beta_1 x_{1i} +\beta_2 x_{2i} + \beta_3 x_{3i}+\varepsilon_i$$ 采用矩阵形式可以表示为$$y=X\beta + \varepsilon$$其中 
 $$
 y=(y_1,y_2,\dots,y_n)^T,\\\\
 \beta =(\beta_0,\beta_1,\dots,\beta_3)^T,\\\\
 X= \begin{vmatrix}
-1 & x\_{11} & \dots & x\_{13} \\\\
-1 & x\_{21} & \dots & x\_{23} \\\\
+1 & x_{11} & \dots & x_{13} \\\\
+1 & x_{21} & \dots & x_{23} \\\\
 \dots &\dots & \dots & \dots \\\\
-1 & x\_{n1} & \dots & x\_{n3}
+1 & x_{n1} & \dots & x_{n3}
 \end{vmatrix} 
 $$
 
