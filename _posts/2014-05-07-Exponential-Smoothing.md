@@ -57,21 +57,29 @@ s_1 = x_1 \\\\
 b_1= x_1 - x_0 \\\\
 s_t = \alpha x_t + (1-\alpha)(s_{t-1} +b_{t-1}) \\\\
 b_t = \beta (s_t - s_{t-1}) + (1-\beta)b_{t-1}
-$$ 其中$\alpha$为数据平滑因子，$0 < \alpha <1 , \beta$为趋势平滑因子，且$0 < \beta <1 $.则为了预测$x_t$之后的数据，可以通过
+$$ 
+
+其中$\alpha$为数据平滑因子，$0 < \alpha <1 , \beta$为趋势平滑因子，且$0 < \beta <1 $.则为了预测$x_t$之后的数据，可以通过
 
 $$
 F_{t+m} = s_t + m b_t
-$$其中$m>0，t+m$,为需要预测的项。$F_0$是未定义的，对于第0期，是没有预测值的。$b_0$的选择很重要，一个替代的方案是使用$b_0 = \frac{x_n - x_0}{n},n > 0$
+$$
+
+其中$m>0，t+m$,为需要预测的项。$F_0$是未定义的，对于第0期，是没有预测值的。$b_0$的选择很重要，一个替代的方案是使用$b_0 = \frac{x_n - x_0}{n},n > 0$
 
 ### 方法2
 此方法又称为布朗线性指数平滑(Brown's linear exponential smoothing (*LES*))定义如下：
+
 $$
 s_0^\prime = x_0 \\\\
 s_0^{\prime\prime} = x_0 \\\\
 s_t^\prime = \alpha x_t + (1-\alpha)s_{t-1}^\prime \\\\
 s_t^{\prime\prime} = \alpha s_t^\prime + (1-\alpha) s_{t-1}^{\prime\prime} \\\\
 F_{t+m} = a_t = mb_t
-$$其中$a_t$为在t时刻的预测水平，$b_t$为在t时刻的预测趋势，定义如下:
+$$
+
+其中$a_t$为在t时刻的预测水平，$b_t$为在t时刻的预测趋势，定义如下:
+
 $$
 a_t = 2s_t^\prime - s_t^{\prime\prime} \\\\
 b_t = \frac{\alpha}{1-\alpha} (s_t^\prime - s_t^{\prime\prime})
@@ -91,9 +99,13 @@ F_{t+m} = (s_t + mb_t)c_{t-L + (m mod L)} \\\\
 $$
 
 设定季节指数$c_i$比较困难，如果N具有完整地季节周期长度，那么
+
+
 $$
 c_i = \frac{1}{N} \sum_{j=1}^{N} \frac{x_{L(j-1)+i}}{A_j}\\\\
 A_j = \frac{\sum_{i=1}^{L} x_{L(j-1) + i}}{L}
-$$其中$L(j-1)表示第j-1个周期中的数据下标$,则$A_j$表示在第在数据序列中第j个周期中的数据的平均值。
+$$
+
+其中$L(j-1)表示第j-1个周期中的数据下标$,则$A_j$表示在第在数据序列中第j个周期中的数据的平均值。
 
 
