@@ -31,8 +31,8 @@ $$s_t = \sum_{n=1}^{k} w_nx_{t+1-n} = w_1x_t + w_2x_2 + … + w_kx_{t-k+1}$$
 简单的一次指数平滑(exponential smoothing)法具有如下的形式
 
 $$ s_t = \alpha * x_{t} +(1-a)* s_{t-1} \\\\
-	=\alpha x_t + \alpha(1-\alpha) x_{t-1} +(1-\alpha)^2 s_{t-2} \\\\
-	=\alpha [x_t + (1-\alpha) x_{t-1} +(1-\alpha)^2 x_{t-2} + …] +(1-\alpha)^t s_0
+	&=\alpha x_t + \alpha(1-\alpha) x_{t-1} +(1-\alpha)^2 s_{t-2} \\\\
+	&=\alpha [x_t + (1-\alpha) x_{t-1} +(1-\alpha)^2 x_{t-2} + …] +(1-\alpha)^t s_0
 $$
 
 其中$\alpha$为平滑因子，$0 < \alpha <1 $,较大的$\alpha$ 降低平滑效果，使得平滑后的数据具有较近数据更多地性质，而较小的平滑因子，会增大平滑效果，使得平滑后的数据具有较少的最近数据的特征。可以使用最小二乘法来优化 $\alpha $.指数平滑法的命名也是由$(1-\alpha)^n而来，并且由于 0 <(1-\alpha) < 1$,则当n越大时，表明越久远的数据对第t期的数据影响越小。
@@ -54,9 +54,9 @@ $$ \min\sum (s_t - x_t)$$
 
 $$
 s_1 = x_1 \\\\
-b_1= x_1 - x_0 \\\\
-s_t = \alpha x_t + (1-\alpha)(s_{t-1} +b_{t-1}) \\\\
-b_t = \beta (s_t - s_{t-1}) + (1-\beta)b_{t-1}
+&b_1= x_1 - x_0 \\\\
+&s_t = \alpha x_t + (1-\alpha)(s_{t-1} +b_{t-1}) \\\\
+&b_t = \beta (s_t - s_{t-1}) + (1-\beta)b_{t-1}
 $$ 
 
 其中$\alpha$为数据平滑因子，$0 < \alpha <1 , \beta$为趋势平滑因子，且$0 < \beta <1 $.则为了预测$x_t$之后的数据，可以通过
