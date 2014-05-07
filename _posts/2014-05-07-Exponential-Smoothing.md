@@ -30,9 +30,11 @@ $$s_t = \sum_{n=1}^{k} w_nx_{t+1-n} = w_1x_t + w_2x_2 + … + w_kx_{t-k+1}$$
 
 简单的一次指数平滑(exponential smoothing)法具有如下的形式
 
-$$ \begin{aligned} s_t = \alpha * x_{t} +(1-a)* s_{t-1} \\\\
+$$ \begin{aligned} 
+s_t & = \alpha * x_{t} +(1-a)* s_{t-1} \\\\
 	& =\alpha x_t + \alpha(1-\alpha) x_{t-1} +(1-\alpha)^2 s_{t-2} \\\\
-	& =\alpha [x_t + (1-\alpha) x_{t-1} +(1-\alpha)^2 x_{t-2} + …] +(1-\alpha)^t s_0 \end{aligned}
+	& =\alpha [x_t + (1-\alpha) x_{t-1} +(1-\alpha)^2 x_{t-2} + …] +(1-\alpha)^t s_0 
+	\end{aligned}
 $$
 
 其中$\alpha$为平滑因子，$0 < \alpha <1 $,较大的$\alpha$ 降低平滑效果，使得平滑后的数据具有较近数据更多地性质，而较小的平滑因子，会增大平滑效果，使得平滑后的数据具有较少的最近数据的特征。可以使用最小二乘法来优化 $\alpha $.指数平滑法的命名也是由$(1-\alpha)^n而来，并且由于 0 <(1-\alpha) < 1$,则当n越大时，表明越久远的数据对第t期的数据影响越小。
@@ -52,11 +54,12 @@ $$ \min\sum (s_t - x_t)$$
 ### 方法1
 定义$\lbrace b_t \rbrace$ 表示数据的趋势序列，则二次指数平滑法可以表示如下
 
-$$
-s_1 = x_1 \\\\
-b_1= x_1 - x_0 \\\\
-s_t = \alpha x_t + (1-\alpha)(s_{t-1} +b_{t-1}) \\\\
-b_t = \beta (s_t - s_{t-1}) + (1-\beta)b_{t-1}
+$$ \begin{aligned}
+s_1 & = x_1 \\\\
+b_1 & = x_1 - x_0 \\\\
+s_t & = \alpha x_t + (1-\alpha)(s_{t-1} +b_{t-1}) \\\\
+b_t & = \beta (s_t - s_{t-1}) + (1-\beta)b_{t-1}
+\end{aligned}
 $$ 
 
 其中$\alpha$为数据平滑因子，$0 < \alpha <1 , \beta$为趋势平滑因子，且$0 < \beta <1 $.则为了预测$x_t$之后的数据，可以通过
@@ -71,18 +74,22 @@ $$
 此方法又称为布朗线性指数平滑(Brown's linear exponential smoothing (*LES*))定义如下：
 
 $$
-s_0^\prime = x_0 \\\\
-s_0^{\prime\prime} = x_0 \\\\
-s_t^\prime = \alpha x_t + (1-\alpha)s_{t-1}^\prime \\\\
-s_t^{\prime\prime} = \alpha s_t^\prime + (1-\alpha) s_{t-1}^{\prime\prime} \\\\
-F_{t+m} = a_t = mb_t
+\begin{aligned}
+s_0^\prime & = x_0 \\\\
+s_0^{\prime\prime} & = x_0 \\\\
+s_t^\prime & = \alpha x_t + (1-\alpha)s_{t-1}^\prime \\\\
+s_t^{\prime\prime} & = \alpha s_t^\prime + (1-\alpha) s_{t-1}^{\prime\prime} \\\\
+F_{t+m} & = a_t = mb_t
+\end{aligned}
 $$
 
 其中$a_t$为在t时刻的预测水平，$b_t$为在t时刻的预测趋势，定义如下:
 
 $$
-a_t = 2s_t^\prime - s_t^{\prime\prime} \\\\
-b_t = \frac{\alpha}{1-\alpha} (s_t^\prime - s_t^{\prime\prime})
+\begin{aligned}
+a_t & = 2s_t^\prime - s_t^{\prime\prime} \\\\
+b_t & = \frac{\alpha}{1-\alpha} (s_t^\prime - s_t^{\prime\prime})
+\end{aligned}
 $$
 
 
@@ -91,19 +98,23 @@ $$
 三次指数平滑法同时考虑到了趋势和季节性变化，又称为Holt Winters指数平滑法.定义$\lbrace b_t \rbrace$ 表示数据的趋势序列，令$\lbrace c_t \rbrace $表示季节修正因子序列。$c_t$表示在时期$ t mode L $中的周期中的趋势比例。其中L表示季节周期长度。则所需的数据量t需要满足$t > L $.三次指数平滑的计算方式可以由下面的公式给出：
 
 $$
-s_0 = x_0 \\\\
-s_t = \alpha \frac{x_t}{c_{t-L}} + (1-\alpha)(s_{t-1} + b_{t-1})\\\\
-b_t = \beta(s_t - s_{t-1}) + (1- \beta)b_{t-1}\\\\
-c_t = \gamma \frac{x_t}{s_t} + (1-\gamma)c_{t-L}\\\\
-F_{t+m} = (s_t + mb_t)c_{t-L + (m mod L)} \\\\
+\begin{aligned}
+s_0 & = x_0 \\\\
+s_t & = \alpha \frac{x_t}{c_{t-L}} + (1-\alpha)(s_{t-1} + b_{t-1})\\\\
+b_t & = \beta(s_t - s_{t-1}) + (1- \beta)b_{t-1}\\\\
+c_t & = \gamma \frac{x_t}{s_t} + (1-\gamma)c_{t-L}\\\\
+F_{t+m} & = (s_t + mb_t)c_{t-L + (m mod L)} \\\\
+\end{aligned}
 $$
 
 设定季节指数$c_i$比较困难，如果N具有完整地季节周期长度，那么
 
 
 $$
-c_i = \frac{1}{N} \sum_{j=1}^{N} \frac{x_{L(j-1)+i}}{A_j}\\\\
-A_j = \frac{\sum_{i=1}^{L} x_{L(j-1) + i}}{L}
+\begin{aligned}
+c_i & = \frac{1}{N} \sum_{j=1}^{N} \frac{x_{L(j-1)+i}}{A_j}\\\\
+A_j & = \frac{\sum_{i=1}^{L} x_{L(j-1) + i}}{L}
+\end{aligned}
 $$
 
 其中$L(j-1)表示第j-1个周期中的数据下标$,则$A_j$表示在第在数据序列中第j个周期中的数据的平均值。
