@@ -35,7 +35,7 @@ R在中data.frame是使用非常频繁地数据结构之一，而data.frame的�
 创建一个data.table 可以使用如下的形式：
 
 	customers <- data.table(CustomId = c(1,3,7),
-							 CustomName = c("Jeff","Jim","Tom")
+							 CustomName = c("Jeff","Jim","Tom"),
 							 City = c("Berlin","NewYork","ChengDu"))
 							 
 当然，由于data.table继承自data.frame，则可以通过使用一个data.frame来创建data.table，如下：
@@ -49,10 +49,22 @@ R在中data.frame是使用非常频繁地数据结构之一，而data.frame的�
 	SELECT column_name,column_name FROM table_name;
 
 	
-在data.table中选择某列数据，需要使用data.table的特殊语法，关于data.frame的语法结构参见[Data Table Syntax](#Syntax)
+在data.table中选择某列数据，需要使用data.table的特殊语法，关于data.frame的语法结构参见[Data Table Syntax](#Syntax),但简单的数据列选择可以使用如下：
 
+	customers[,list(CustomId,CustomName)]
 
+正如data.table的文档中所说，参数j指定的是一个可以被计算的表达式。所以如果希望选择一列数据，那么可以使用如下：
 
+	customers[,CustomName]
+	[1] "Jeff" "Jim"  "Tom" 
+
+	customers[,"CustomName"]
+	[1] "CustomName"
+
+	## 而当需要进行条件查询时，可以借助于，参数i
+	customers[CustomName=="Jeff"]
+   		CustomId 	CustomName   	City
+	1:        1       Jeff 			Berlin
 
 
 
