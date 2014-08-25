@@ -24,6 +24,24 @@ R在中data.frame是使用非常频繁地数据结构之一，而data.frame的�
 | 5				| 5				|  ChengDu		|
 
 
+## Syntax
+
+	## S3 method for class 'data.table'
+	x[i, j, by, keyby, with = TRUE,
+	nomatch = getOption("datatable.nomatch"),                   # default: 	NA_integer_
+	mult = "all",
+	roll = FALSE,
+	rollends = if (roll=="nearest") c(TRUE,TRUE)
+             else if (roll>=0) c(FALSE,TRUE)
+             else c(TRUE,FALSE),
+	which = FALSE,
+	.SDcols,
+	verbose = getOption("datatable.verbose"),                   # default: FALSE
+	allow.cartesian = getOption("datatable.allow.cartesian"),   # default: FALSE
+	drop = NULL,
+	rolltolast = FALSE   # deprecated
+	]
+
 ## CREATE 
 	
 	CREATE TABLE table_name
@@ -70,25 +88,42 @@ R在中data.frame是使用非常频繁地数据结构之一，而data.frame的�
     1:        1     Berlin
     
 
+SELECT JOIN用于两个或者多个表之间的关系，从这些表中查询数据
+	
+	SELECT CUSTOMERS.CUSTOMID AS 	CUSTOMID,CUSTOMERS.CUSTOMNAME AS CUSTOMNAME, 	ORDERS.ORDERID AS ORDERID, CUSTOMERS.CITY AS FROMCITY,ORDERS.TOCITY AS TOCITY 	FROM CUSTOMERS, ORDERS WHERE CUSTOMERS.CUSTOMEID = ORDERS.CUSTOMID
+
+该SQL JOIN 用于从两张表中查找那些CUSTOMID相同的记录，相同的操作在 data.table中可以如下实现：
+	
+	setkey(customers,"CustomId")
+	setkey(orders,"CustomId")
+	customers[orders,nomatch=0,mult="all"]
+	##输出：
+	   		CustomId CustomName   City OrderId ToCity
+	1:        1       Jeff Berlin       2 Berlin
+
+SQL INNER JOIN,同JOIN。
+
+SQL LEFT JOIN,从左表中返回行，即使右表没有那些行
+
+	CUSTOMERS.CUSTOMID AS 	CUSTOMID,CUSTOMERS.CUSTOMNAME AS CUSTOMNAME, 	ORDERS.ORDERID AS ORDERID, CUSTOMERS.CITY AS FROMCITY,ORDERS.TOCITY AS TOCITY 	FROM CUSTOMERS LEFT JOIN ORDERS WHERE CUSTOMERS.CUSTOMEID = ORDERS.CUSTOMID
+	
+该实现，在data.table中如下：
+	
+	setkey(customers,"CustomId")
+	setkey(orders,"CustomId")
+	orders[customers,nomatch=NA,mult="all"]
+	
+	##输出：
+	   	CustomId OrderId ToCity CustomName    City
+	1:        1       2 Berlin       Jeff  Berlin
+	2:        3      NA     NA        Jim NewYork
+	3:        7      NA     NA        Tom ChengDu
+	
+SQL RIGHT JOIN，如LEFT JOIN.
+
+##参数说明
+
++ i：如果i是这个table列名的表达式，那么将会根据这个表达式计算一个类似于SELF JOIN的查询。
 
 
 
-
-
-## Syntax
-
-	## S3 method for class 'data.table'
-	x[i, j, by, keyby, with = TRUE,
-	nomatch = getOption("datatable.nomatch"),                   # default: NA_integer_
-	mult = "all",
-	roll = FALSE,
-	rollends = if (roll=="nearest") c(TRUE,TRUE)
-             else if (roll>=0) c(FALSE,TRUE)
-             else c(TRUE,FALSE),
-	which = FALSE,
-	.SDcols,
-	verbose = getOption("datatable.verbose"),                   # default: FALSE
-	allow.cartesian = getOption("datatable.allow.cartesian"),   # default: FALSE
-	drop = NULL,
-	rolltolast = FALSE   # deprecated
-	]
