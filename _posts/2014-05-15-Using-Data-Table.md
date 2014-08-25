@@ -46,7 +46,7 @@ R在中data.frame是使用非常频繁地数据结构之一，而data.frame的�
 
 ## SELECT
 
-	SELECT column_name,column_name FROM table_name;
+	SELECT column_name,column_name FROM table_name WHERE column_name operator value;
 
 	
 在data.table中选择某列数据，需要使用data.table的特殊语法，关于data.frame的语法结构参见[Data Table Syntax](#Syntax),但简单的数据列选择可以使用如下：
@@ -65,7 +65,10 @@ R在中data.frame是使用非常频繁地数据结构之一，而data.frame的�
 	customers[CustomName=="Jeff"]
    		CustomId 	CustomName   	City
 	1:        1       Jeff 			Berlin
-
+    customers[CustomName=="Jeff",list(CustomId,City)]
+        CustomId    City
+    1:        1     Berlin
+    
 
 
 
