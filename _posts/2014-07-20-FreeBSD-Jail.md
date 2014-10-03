@@ -15,7 +15,7 @@ The first day of SysAdvent talked about Linux Containers (LXC), and how they are
 
 If you think of a traditional OS it looks something like this:
 
-![Traditional OS Architecture](media/img/bsd-imgs/bsd014.jpg "Traditional OS Architecture")
+![Traditional OS Architecture](/media/img/bsd-imgs/bsd014.jpg "Traditional OS Architecture")
 
 Among other things, the kernel controls access to hardware, makes sure processes are not stomping all over each other's memory, does the necessary access control checks for actions, and also ensures that packets land at the appropriate sockets. However, even if everything is perfect, a sufficiently privileged process can cause a lot of havoc if it misbehaves.
 
@@ -23,7 +23,7 @@ Let's say you have a process running as root that gets compromised and is now ru
 
 Before I go any further, I should probably explain how jails are different from what most people are familiar with. To be consistent with the earlier article I'll call it "platform virtualization." That solution looks something like this:
 
-![Platform Virtualization Architecture](media/img/bsd-imgs/bsd015.jpg "Platform Virtualization Architecture")
+![Platform Virtualization Architecture](/media/img/bsd-imgs/bsd015.jpg "Platform Virtualization Architecture")
 
 There are different approaches but it is essentially the same goal. Insert a small "virtual machine monitor" (VMM) layer - often called a hypervisor - that brokers access to the real hardware and emulates whatever hardware the systems administrator wants to the OS running on top of it. Modern chips have support for helping do this in hardware (AMD calls it "AMD-V" and Intel calls it "VT-x"). Just about every chip shipping now has this built in.
 
@@ -35,7 +35,7 @@ There are some drawbacks to this approach. It can be very resource intensive as 
 
 Jails are best thought of as a means to contain and isolate processes from each other, even if those processes are privileged.
 
-![FreeBSD Jail](media/img/bsd-imgs/bsd016.jpg "FreeBSD Jail")
+![FreeBSD Jail](/media/img/bsd-imgs/bsd016.jpg "FreeBSD Jail")
 
 In this case, we are running multiple processes, but the kernel has been modified to limit the resources that each process can affect or view. This is the concept upon which jails are built: The name of the game is process isolation and containment, not virtualization.
 
