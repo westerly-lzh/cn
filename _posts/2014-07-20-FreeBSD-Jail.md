@@ -11,7 +11,7 @@ tags:
 
 The first day of SysAdvent talked about Linux Containers (LXC), and how they are an "operating system level virtualization", as opposed to "platform virtualization" choices like Xen or VMWare. Today, I'll focus on jails in FreeBSD and how they achieve a similar goal.
 
-####BACKGROUND
+##BACKGROUND
 
 If you think of a traditional OS it looks something like this:
 
@@ -31,7 +31,7 @@ There are different approaches but it is essentially the same goal. Insert a sma
 
 There are some drawbacks to this approach. It can be very resource intensive as the more virtual machines you spin up the more hardware and state has to be kept in memory. With modern hardware this is becoming less of a problem, but, for some environments, it may still hold true.
 
-####ENTER JAILS
+##ENTER JAILS
 
 Jails are best thought of as a means to contain and isolate processes from each other, even if those processes are privileged.
 
@@ -39,13 +39,13 @@ Jails are best thought of as a means to contain and isolate processes from each 
 
 In this case, we are running multiple processes, but the kernel has been modified to limit the resources that each process can affect or view. This is the concept upon which jails are built: The name of the game is process isolation and containment, not virtualization.
 
-####THE DETAILS
+##THE DETAILS
 
 I'm going to skip over the details of how jails are created and what that means from a data structure standpoint and skip straight to how to set up a jail and how to use it. My examples will be from a fairly recent development snapshot ("current," if you are familiar with FreeBSD terminology) that is not yet a finished release, so some of the things I will describe are not completely accurate to all versions of FreeBSD but the concepts are the important part.
 
 Jails have been around in FreeBSD for a long time now. They were first introduced in FreeBSD 4.0 (10 years ago). Since that release, jails have been refined and extended to support many of the things people want from them. Recent releases of FreeBSD include the ability for IPv6, hierarchical jails, resource utilization limits, and even virtual network stacks (which is out of scope for this article).
 
-####SETUP
+##SETUP
 
 For the purposes of this article, I'm going to use the term host to indicate the FreeBSD base operating system upon which the jails will run.
 
@@ -53,7 +53,7 @@ A jail only requires a handful of things in order to operate. The most important
 
 Actually getting a working userland is outside of the scope of this article. There are many ways to pick from: building your own, using your existing install, or installing the binaries straight from release media. The means of getting the binaries on disk is up to you. You also don't need a full world (FreeBSD's term for the base OS), if you know exactly what you are doing you can populate it with just what you need. There are also other tricks you can do involving null mounting in other paths. For the purposes of this article I've installed an exact copy of my host to /jails/test (minus any package installations).
 
-####STARTING JAILS
+##STARTING JAILS
 
 With a world installed to /jails/test, I don't need anything else installed in order to start a jail. Everything you need is provided by the base FreeBSD install. Starting a jail manually is done using the jail(8) command.
 
@@ -121,7 +121,7 @@ And outside the jail:
 
 A keen eye would spot the weirdness '?.?.?' in the MOTD above. Normally that is cleared up when the computer boots, but since we didn't really "boot" this jail, that step never happened. Let's explore what it takes to get a jail to start automatically upon boot.
 
-####BOOTING AUTOMATICALLY
+##BOOTING AUTOMATICALLY
 
 One thing you must do when starting a jail is make sure the host services are set to listen on only IP addresses that belong to the host, and not the jail. Failure to do this will cause your host services to listen on IP addresses that should be for the jail. This can have unintended consequences such as exposing host services to places they shouldn't be. For now I'm assuming you know how to do that.
 
@@ -138,7 +138,7 @@ Like most things in FreeBSD they are controlled with settings in /etc/rc.conf. T
 
 Using this configuration, the 'test' jail will boot and start automatically.
 
-####BOOTING MANUALLY
+##BOOTING MANUALLY
 
 You can use the /etc/rc.d/jail script to boot a jail manually provided that the appropriate settings are set in /etc/rc.conf. Another option is to set the IP address alias manually and mount devfs manually then call /etc/rc yourself:
 
@@ -159,13 +159,13 @@ You can use the /etc/rc.d/jail script to boot a jail manually provided that the 
          3  192.168.1.100   test                          /jails/test
     wxs@ack wxs % 
 
-####RESTRICTIONS
+##RESTRICTIONS
 
 So if jails are all about isolation and containment, what can and what can't you do inside a jail? The general rule of thumb is that if it affects the host or other jails it is restricted by default. There are knobs you can turn to allow these things, but in the interests of not breaking the security model, they are turned off by default. Exactly what is restricted and what knobs are available is highly dependent upon the version of FreeBSD you are running. As more and more things are being designed to work better with jails, the set of restricted operations is shrinking. For example, in earlier releases root inside a jail was not allowed to change any network stack configuration information. With the addition of virtualized network stacks in newer releases of FreeBSD this restriction is gone, provided the jail is using a virtualized stack.
 
 For more information on this it is best to read the documentation available.
 
-####TRADE OFFS
+##TRADE OFFS
 
 Jails are a great way of getting "operating system level virtualization" on FreeBSD, but like anything else, they come with a series of trade-offs which must be considered prior to implementation.
 
@@ -177,11 +177,11 @@ As a jail is really just isolating processes from each other, it is important to
 
 Lastly, a user on the host can get access to things inside one of the jails if the UIDs are the same. For example, on one of my hosts my UID is 1001, and inside one of the jails a different user (user1) has UID 1001. From the viewpoint of user1, only he has access to his files inside the jail. From my viewpoint, outside of the jail, the files are owned by me. The host is going to use it's copy of /etc/passwd to determine ownership of files, which means there can be overlapping information. This is another important consideration to keep in mind when setting up a jail environment.
 
-####USES
+##USES
 
 There are many uses for jails. Lots of places use them to isolate web hosting environments from each other, to provide root inside a contained system for a customer, and to isolate developers from each other. I personally use them to isolate test environments from each other. As a developer who spends most of his time up in userland, this is a great solution to my need to be able to quickly setup a clean test environment. As you spend more time with jails, you begin to see different opportunities for application.
 
 As more parts of FreeBSD become friendlier to jails you can start to build very interesting things. Virtual network stacks, zfs, multi-IP jails, hierarchical jails and many other things are fertile areas for exploration as a systems administrator. As is often the case, the best way to get familiar with jails is to dive in heads first!
 
 
-FROM: http://sysadvent.blogspot.hk/2010/12/day-14-freebsd-jails.html
+FROM: [http://sysadvent.blogspot.hk/2010/12/day-14-freebsd-jails.html](http://sysadvent.blogspot.hk/2010/12/day-14-freebsd-jails.html "原文地址")
