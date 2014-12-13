@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  JPA CascadeType理解
+title:  Jpa CascadeType 详解
 categories:
 - JPA
 tags:
-－ JPA
-－ CascadeType
+- JPA
+- Cascadetype
 
 ---
 
