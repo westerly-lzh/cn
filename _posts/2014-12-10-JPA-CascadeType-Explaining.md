@@ -11,7 +11,7 @@ tags:
 
 ##Background
 
-网上关于JPA的CascadeType讲解很多，但几乎都说的很模糊.本文试图使用一个具体的例子来说明CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH,CascadeType.REMOVE,CascadeType.ALL具体区别。
+网上关于JPA的CascadeType讲解很多，但几乎都说的很模糊.本文试图使用一个具体的例子来说明CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.ALL 具体区别。
 
 首先，我们使用一个订单和订单项的例子。该例子在网络上那些介绍JPA CascadeType用法的文章钟广为流传。
 	
