@@ -13,10 +13,13 @@ comments: yes
 
 ## 二、书籍相关
 
+1.	暂无
+2.	
 
 
 ## 三、论文相关
 1.	LDA--LDA_Notes [PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/lda_notes.pdf)
+2.	
 
 
 
