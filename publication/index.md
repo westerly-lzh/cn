@@ -4,15 +4,20 @@ title: Publication
 comments: yes
 ---
 
-看完就尽情的喷我吧
+本页用于文档及其相关资料发布。
 
-# 一、书籍
+## 一、作业相关
 
-- 测试中，暂无
+1.	博弈论－－在线电影定价模型[PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/game_theory_dianying.pdf),[Latex](https://github.com/westerly-lzh/documents/blob/master/latex/game_theory_dianying.tex),[Code](https://github.com/westerly-lzh/documents/blob/master/codes/game_theory_dianying.nb)
+2.	
 
-# 二、论文
+## 二、书籍相关
 
-- 正在努力写作中，亲们就等等吧
+
+
+## 三、论文相关
+1.	LDA--LDA_Notes [PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/lda_notes.pdf)
+
 
 
 
