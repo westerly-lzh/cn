@@ -18,7 +18,7 @@ comments: yes
 
 
 ## 三、论文相关
-1.	LDA--LDA_Notes [PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/lda_notes.pdf)
+1.	LDA--LDA_Notes [PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/lda_notes.pdf?raw=true)
 2.	
 
 
