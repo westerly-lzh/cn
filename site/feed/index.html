@@ -7,7 +7,7 @@
     <title>Jeff Lee</title>
     <atom:link href="http://westerly-lzh.github.io/cn/feed/" rel="self" type="application/rss+xml" />
     <link>http://jeff-lee.name</link>
-    <lastBuildDate>2015-05-16T17:40:49+08:00</lastBuildDate>
+    <lastBuildDate>2015-05-16T18:02:43+08:00</lastBuildDate>
     <webMaster>westerly.lzh@gmail.com</webMaster>
     
     <item>
@@ -36,31 +36,29 @@ v09	28	40	36	20	22	22	50	78	50	0	31	7	0.3
 v10	31	58	64	14	22	50	41	67	50	31	0	8	0.3
 </code></pre>
 
-<p>该问题中有十个供应商，分别为v01 ~ v10, v00为配送中心，q为车辆在每个供应商处的载货量（按照体积计算），而t为在该供应商处的集货时间。车辆限制为：车辆最大载货体积为41 <script type="math/tex">$m^3</script>$, 车辆的行驶距离为200km，车速为40，车辆最大行驶时间限制为7小时。</p>
+<p>该问题中有十个供应商，分别为v01 ~ v10, v00为配送中心，q为车辆在每个供应商处的载货量（按照体积计算），而t为在该供应商处的集货时间。车辆限制为：车辆最大载货体积为41 $m^3$, 车辆的行驶距离为200km，车速为40，车辆最大行驶时间限制为7小时。</p>
 
 <h2 id="section-2">模型</h2>
 
-<p>假定供应商以<script type="math/tex">$V_i</script>${<script type="math/tex">$i=0,1,2,...,n</script>$}来表示，其中<script type="math/tex">$V_0</script>$代表集货中心，集货中心有<script type="math/tex">$m</script>$辆车，所有车的行驶速度一致，车辆的最大载货量表示为<script type="math/tex">$Q\_{max}</script>$，车辆允许的最大行驶时间为<script type="math/tex">$T\_{max}</script>$,允许的最大行驶距离为<script type="math/tex">$L\_{max}</script>$,车辆的行驶速度为<script type="math/tex">$V</script>$，供应商<script type="math/tex">$V\_i</script>$与供应商<script type="math/tex">$V\_j</script>$之间的距离用<script type="math/tex">$d\_{ij}</script>$,供应商<script type="math/tex">$V\_i</script>$到供应商<script type="math/tex">$V\_j</script>$需要花费的时间为<script type="math/tex">$\frac{d\_{ij}}{V}</script>$,在供应商<script type="math/tex">$V\_i</script>$处的集货时间为<script type="math/tex">$t\_{ci}</script>$,发送量为<script type="math/tex">$q\_i</script>$.</p>
+<p>假定供应商以$V_i${$i=0,1,2,…,n$}来表示，其中$V_0$代表集货中心，集货中心有$m$辆车，所有车的行驶速度一致，车辆的最大载货量表示为$Q_{max}$，车辆允许的最大行驶时间为$T_{max}$,允许的最大行驶距离为$L_{max}$,车辆的行驶速度为$V$，供应商$V_i$与供应商$V_j$之间的距离用$d_{ij}$,供应商$V_i$到供应商$V_j$需要花费的时间为$\frac{d_{ij}}{V}$,在供应商$V_i$处的集货时间为$t_{ci}$,发送量为$q_i$.</p>
 
-<p>定义：<script type="math/tex">% <![CDATA[
-$X\_{ijk} =\cases{1&车辆k从供应商V_i行驶到供应商V_j \\\\0&否则}  %]]></script>$,<script type="math/tex">% <![CDATA[
-$y\_{ik} = \cases{1&供应商V\_i由车辆k进行循环取货 \\\\0&否则} %]]></script>$。则该模型可以表示如下：</p>
+<p>定义：$X_{ijk} =\cases{1&amp;车辆k从供应商V_i行驶到供应商V_j \\0&amp;否则} $,$y_{ik} = \cases{1&amp;供应商V_i由车辆k进行循环取货 \\0&amp;否则}$。则该模型可以表示如下：</p>
 
-<script type="math/tex; mode=display">D = min(\sum\_{i=0}^n\sum\_{j=0}^n\sum\_{k=1}^md\_{ij}X\_{ijk}) \label{1}</script>
+<script type="math/tex; mode=display">D = min(\sum_{i=0}^n\sum_{j=0}^n\sum_{k=1}^md_{ij}X_{ijk}) \label{1}</script>
 
-<script type="math/tex; mode=display">\sum\_{k=1}^m y\_{ik} =1  \quad  i=1,2,...,n \label{2}</script>
+<script type="math/tex; mode=display">\sum_{k=1}^m y_{ik} =1  \quad  i=1,2,...,n \label{2}</script>
 
-<script type="math/tex; mode=display">\sum\_{i=0}^n\sum\_{k=1}^m X\_{ijk} =1  \quad  j=1,2,...,n \label{3}</script>
+<script type="math/tex; mode=display">\sum_{i=0}^n\sum_{k=1}^m X_{ijk} =1  \quad  j=1,2,...,n \label{3}</script>
 
-<script type="math/tex; mode=display">\sum\_{j=1}^n\sum\_{k=1}^m X\_{ijk} =1  \quad  i=1,2,...,n \label{4}</script>
+<script type="math/tex; mode=display">\sum_{j=1}^n\sum_{k=1}^m X_{ijk} =1  \quad  i=1,2,...,n \label{4}</script>
 
-<script type="math/tex; mode=display">\sum\_{i=1}^n\sum\_{k=1}^m X\_{oik} =\sum\_{j=1}^n\sum\_{k=1}^mX\_{jok} \label{5}</script>
+<script type="math/tex; mode=display">\sum_{i=1}^n\sum_{k=1}^m X_{oik} =\sum_{j=1}^n\sum_{k=1}^mX_{jok} \label{5}</script>
 
-<script type="math/tex; mode=display">\sum\_{i=1}^ny\_{ik}q\_i \le Q\_{max} \quad k=1,2,...,m \label{6}</script>
+<script type="math/tex; mode=display">\sum_{i=1}^ny\_{ik}q_i \le Q_{max} \quad k=1,2,...,m \label{6}</script>
 
-<script type="math/tex; mode=display">\sum\_{i=1}^n\sum\_{j=1}^nX\_{ijk}d\_{ij} \le L\_{max} \quad k=1,2,...,m \label{7}</script>
+<script type="math/tex; mode=display">\sum_{i=1}^n\sum_{j=1}^nX_{ijk}d_{ij} \le L_{max} \quad k=1,2,...,m \label{7}</script>
 
-<script type="math/tex; mode=display">\sum\_{i=0}^n\sum\_{j=1}^n X\_{ijk}(\frac{d\_{ij}}{V}+t\_{cj}) \le T\_{max} \quad k=1,2,...,m \label{8}</script>
+<script type="math/tex; mode=display">\sum_{i=0}^n\sum_{j=1}^n X_{ijk}(\frac{d_{ij}}{V}+t_{cj}) \le T_{max} \quad k=1,2,...,m \label{8}</script>
 
 <h2 id="section-3">蚁群算法原理</h2>
 <p>蚂蚁在觅食过程中，在第一次经过一个还没有走过的路径的分叉口时，会随机的挑选其中一条路径前进，并分泌出与路径信息相关的信息素，当后来的蚂蚁再次经过该岔路口时就会通过感知已经经过该路径的蚂蚁遗留下来的信息素，并通过选择信息素浓度较大的路径来完成寻觅工作。这种正向的反馈机制能够有效的引导蚂蚁找到最优路径，因为最优路径上经过的蚂蚁会越来越多，信息量就会越来越大，而由于非最优路径上的信息量会随着时间的流逝而逐渐减少直至消失。</p>
@@ -97,29 +95,29 @@ public class Ant implements Cloneable {
 	private float[] T;// 供应商的集货时间
 	private float V; // 车辆速度
 	
-	private float Q_max;
-	private float L_max;
-	private float T_max;
+	private float Q\_max;
+	private float L\_max;
+	private float T\_max;
 	
-	private float load_Q = 0;
-	private float load_T = 0;
-	private float load_D = 0;
+	private float load\_Q = 0;
+	private float load\_T = 0;
+	private float load\_D = 0;
 	
 	public void resetLoad() {
-		load_Q = 0.0f;
-		load_T = 0.0f;
-		load_D = 0.0f;
+		load\_Q = 0.0f;
+		load\_T = 0.0f;
+		load\_D = 0.0f;
 	}
 
 	public boolean selectCityIsOK(int selectCity) {
-		return ((load_Q + Q[selectCity]) &lt;= Q_max) &amp;&amp; ((load_D + distance[tabu.get(tabu.size() - 2)][selectCity]) &lt;= L_max)
-				&amp;&amp; ((T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V) &lt;= T_max);
+		return ((load\_Q + Q[selectCity]) &lt;= Q\_max) &amp;&amp; ((load\_D + distance[tabu.get(tabu.size() - 2)][selectCity]) &lt;= L\_max)
+				&amp;&amp; ((T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V) &lt;= T\_max);
 	}
 	
 	public void updateLoadQ(int selectCity) {
-		load_Q += load_Q + Q[selectCity];
-		load_D += load_D + distance[tabu.get(tabu.size() - 2)][selectCity];
-		load_T += load_T + T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V;
+		load\_Q += load\_Q + Q[selectCity];
+		load\_D += load\_D + distance[tabu.get(tabu.size() - 2)][selectCity];
+		load\_T += load\_T + T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V;
 	}
 	
 	public Ant() {
@@ -129,22 +127,22 @@ public class Ant implements Cloneable {
 		T = new float[cityNum];
 		V = 40;
 	
-		Q_max = 41;
-		L_max = 200;
-		T_max = 7.0f;
+		Q\_max = 41;
+		L\_max = 200;
+		T\_max = 7.0f;
 	
 	}
 	
-	public Ant(int cityNum, float[] Q, float[] T, float V, float Q_max, float L_max, float T_max) {
+	public Ant(int cityNum, float[] Q, float[] T, float V, float Q\_max, float L\_max, float T\_max) {
 		this.cityNum = cityNum;
 		tourLength = 0;
 		this.Q = Q;
 		this.T = T;
 		this.V = V;
 	
-		this.Q_max = Q_max;
-		this.L_max = L_max;
-		this.T_max = T_max;
+		this.Q\_max = Q\_max;
+		this.L\_max = L\_max;
+		this.T\_max = T\_max;
 	}
 	
 	/**
@@ -198,8 +196,8 @@ public class Ant implements Cloneable {
 		// 计算分母部分
 		for (Integer i : allowedCities) {
 			sum += Math.pow(pheromone[currentCity][i.intValue()], alpha) * Math.pow(1.0 / distance[currentCity][i.intValue()], beta)
-					* Math.pow((load_Q + Q[i.intValue()]) / Q_max, lamda)
-					* Math.pow((L_max / (load_D + distance[currentCity][i.intValue()] + distance[i.intValue()][0])), omga);
+					* Math.pow((load\_Q + Q[i.intValue()]) / Q\_max, lamda)
+					* Math.pow((L\_max / (load\_D + distance[currentCity][i.intValue()] + distance[i.intValue()][0])), omga);
 		}
 		// 计算概率矩阵
 		for (int i = 0; i &lt; cityNum; i++) {
@@ -207,8 +205,8 @@ public class Ant implements Cloneable {
 			for (Integer j : allowedCities) {
 				if (i == j.intValue()) {
 					p[i] = (Math.pow(pheromone[currentCity][i], alpha) * Math.pow(1.0 / distance[currentCity][i], beta)
-							* Math.pow((load_Q + Q[j.intValue()]) / Q_max, lamda) * Math.pow(
-							(L_max / (load_D + distance[currentCity][j.intValue()] + distance[j.intValue()][0])), omga))
+							* Math.pow((load\_Q + Q[j.intValue()]) / Q\_max, lamda) * Math.pow(
+							(L\_max / (load\_D + distance[currentCity][j.intValue()] + distance[j.intValue()][0])), omga))
 							/ sum;
 					flag = true;
 					break;
@@ -270,7 +268,7 @@ public class ACO {
 	private Ant[] ants;
 	private int antNum;
 	private int cityNum;
-	private int MAX_GEN;
+	private int MAX\_GEN;
 	private float[][] pheromone;
 	private float[][] distance;
 	private float bestLength;
@@ -285,17 +283,17 @@ public class ACO {
 	private float[] T;// 供应商的集货时间
 	private float V = 40; // 车辆速度
 
-	private float Q_max = 41;
-	private float L_max = 200;
-	private float T_max = 7.0f;
+	private float Q\_max = 41;
+	private float L\_max = 200;
+	private float T\_max = 7.0f;
 
 	public ACO() {
 
 	}
 
-	public ACO(int antNum, int max_Gen, float alpha, float beta, float lamda, float omga, float rho) {
+	public ACO(int antNum, int max\_Gen, float alpha, float beta, float lamda, float omga, float rho) {
 		this.antNum = antNum;
-		this.MAX_GEN = max_Gen;
+		this.MAX\_GEN = max\_Gen;
 		this.ants = new Ant[antNum];
 		this.alpha = alpha;
 		this.beta = beta;
@@ -337,11 +335,11 @@ public class ACO {
 			}
 		}
 	
-		bestLength = Integer.MAX_VALUE;
+		bestLength = Integer.MAX\_VALUE;
 	
 		// 随机放置蚂蚁
 		for (int i = 0; i &lt; antNum; i++) {
-			ants[i] = new Ant(cityNum, Q, T, V, Q_max, L_max, T_max);
+			ants[i] = new Ant(cityNum, Q, T, V, Q\_max, L\_max, T\_max);
 			ants[i].init(distance, alpha, beta, lamda, omga);
 		}
 		reader.close();
@@ -353,8 +351,8 @@ public class ACO {
 
 	public void solve() {
 		final Wrap wrap = new Wrap();
-		for (int g = 0; g &lt; MAX_GEN; g++) {
-			//----------JAVA_8 BEGIN
+		for (int g = 0; g &lt; MAX\_GEN; g++) {
+			//----------JAVA\_8 BEGIN
 			wrap.gen = g;
 			Arrays.asList(ants).parallelStream().forEach(new Consumer&lt;Ant&gt;() {
 			
@@ -478,7 +476,7 @@ public class ACO {
 
 	public static void main(String[] args) throws IOException {
 		ACO aco = new ACO(60, 10000, 1.0f, 2.0f, 0.4f, 0.6f, 0.15f);
-		aco.init("/Users/jeff/Documents/Eworkspace/AL_DEMOS/src/ant/data.dat");
+		aco.init("/Users/jeff/Documents/Eworkspace/AL\_DEMOS/src/ant/data.dat");
 		aco.solve();
 	}
 

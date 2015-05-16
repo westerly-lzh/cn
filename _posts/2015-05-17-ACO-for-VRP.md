@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  $循环取货问题的蚁群算法
+title:  循环取货问题的蚁群算法
 categories:
 - 优化
 tags:
@@ -33,9 +33,9 @@ tags:
 
 ## 模型
 
-假定供应商以$V_i${$i=0,1,2,...,n$}来表示，其中$V_0$代表集货中心，集货中心有$m$辆车，所有车的行驶速度一致，车辆的最大载货量表示为$Q_{max}$，车辆允许的最大行驶时间为$T_{max}$,允许的最大行驶距离为$L_{max}$,车辆的行驶速度为$V$，供应商$V_i$与供应商$V_j$之间的距离用$d_{ij}$,供应商$V_i$到供应商$V_j$需要花费的时间为$\frac{d_{ij}}{V}$,在供应商$V_i$处的集货时间为$t_{ci}$,发送量为$q_i$.
+假定供应商以$V\_i${$i=0,1,2,...,n$}来表示，其中$V\_0$代表集货中心，集货中心有$m$辆车，所有车的行驶速度一致，车辆的最大载货量表示为$Q\_{max}$，车辆允许的最大行驶时间为$T\_{max}$,允许的最大行驶距离为$L\_{max}$,车辆的行驶速度为$V$，供应商$V\_i$与供应商$V\_j$之间的距离用$d\_{ij}$,供应商$V\_i$到供应商$V\_j$需要花费的时间为$\frac{d\_{ij}}{V}$,在供应商$V\_i$处的集货时间为$t\_{ci}$,发送量为$q\_i$.
 
-定义：$X_{ijk} =\cases{1&车辆k从供应商V_i行驶到供应商V_j \\\\0&否则} $,$y_{ik} = \cases{1&供应商V_i由车辆k进行循环取货 \\\\0&否则}$。则该模型可以表示如下：
+定义：$X\_{ijk} =\\cases{1&车辆k从供应商V_i行驶到供应商V_j \\\\0&否则} $,$y\_{ik} = \\cases{1&供应商V_i由车辆k进行循环取货 \\\\0&否则}$。则该模型可以表示如下：
 
 $$D = min(\sum_{i=0}^n\sum_{j=0}^n\sum_{k=1}^md_{ij}X_{ijk}) \label{1}$$
 
@@ -47,7 +47,7 @@ $$\sum_{j=1}^n\sum_{k=1}^m X_{ijk} =1  \quad  i=1,2,...,n \label{4}$$
 
 $$\sum_{i=1}^n\sum_{k=1}^m X_{oik} =\sum_{j=1}^n\sum_{k=1}^mX_{jok} \label{5}$$
 
-$$\sum_{i=1}^ny_{ik}q_i \le Q_{max} \quad k=1,2,...,m \label{6}$$
+$$\sum_{i=1}^ny\_{ik}q_i \le Q_{max} \quad k=1,2,...,m \label{6}$$
 
 $$\sum_{i=1}^n\sum_{j=1}^nX_{ijk}d_{ij} \le L_{max} \quad k=1,2,...,m \label{7}$$
 
@@ -90,29 +90,29 @@ Ant.java
 		private float[] T;// 供应商的集货时间
 		private float V; // 车辆速度
 		
-		private float Q_max;
-		private float L_max;
-		private float T_max;
+		private float Q\_max;
+		private float L\_max;
+		private float T\_max;
 		
-		private float load_Q = 0;
-		private float load_T = 0;
-		private float load_D = 0;
+		private float load\_Q = 0;
+		private float load\_T = 0;
+		private float load\_D = 0;
 		
 		public void resetLoad() {
-			load_Q = 0.0f;
-			load_T = 0.0f;
-			load_D = 0.0f;
+			load\_Q = 0.0f;
+			load\_T = 0.0f;
+			load\_D = 0.0f;
 		}
 
 		public boolean selectCityIsOK(int selectCity) {
-			return ((load_Q + Q[selectCity]) <= Q_max) && ((load_D + distance[tabu.get(tabu.size() - 2)][selectCity]) <= L_max)
-					&& ((T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V) <= T_max);
+			return ((load\_Q + Q[selectCity]) <= Q\_max) && ((load\_D + distance[tabu.get(tabu.size() - 2)][selectCity]) <= L\_max)
+					&& ((T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V) <= T\_max);
 		}
 		
 		public void updateLoadQ(int selectCity) {
-			load_Q += load_Q + Q[selectCity];
-			load_D += load_D + distance[tabu.get(tabu.size() - 2)][selectCity];
-			load_T += load_T + T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V;
+			load\_Q += load\_Q + Q[selectCity];
+			load\_D += load\_D + distance[tabu.get(tabu.size() - 2)][selectCity];
+			load\_T += load\_T + T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V;
 		}
 		
 		public Ant() {
@@ -122,22 +122,22 @@ Ant.java
 			T = new float[cityNum];
 			V = 40;
 		
-			Q_max = 41;
-			L_max = 200;
-			T_max = 7.0f;
+			Q\_max = 41;
+			L\_max = 200;
+			T\_max = 7.0f;
 		
 		}
 		
-		public Ant(int cityNum, float[] Q, float[] T, float V, float Q_max, float L_max, float T_max) {
+		public Ant(int cityNum, float[] Q, float[] T, float V, float Q\_max, float L\_max, float T\_max) {
 			this.cityNum = cityNum;
 			tourLength = 0;
 			this.Q = Q;
 			this.T = T;
 			this.V = V;
 		
-			this.Q_max = Q_max;
-			this.L_max = L_max;
-			this.T_max = T_max;
+			this.Q\_max = Q\_max;
+			this.L\_max = L\_max;
+			this.T\_max = T\_max;
 		}
 		
 		/**
@@ -191,8 +191,8 @@ Ant.java
 			// 计算分母部分
 			for (Integer i : allowedCities) {
 				sum += Math.pow(pheromone[currentCity][i.intValue()], alpha) * Math.pow(1.0 / distance[currentCity][i.intValue()], beta)
-						* Math.pow((load_Q + Q[i.intValue()]) / Q_max, lamda)
-						* Math.pow((L_max / (load_D + distance[currentCity][i.intValue()] + distance[i.intValue()][0])), omga);
+						* Math.pow((load\_Q + Q[i.intValue()]) / Q\_max, lamda)
+						* Math.pow((L\_max / (load\_D + distance[currentCity][i.intValue()] + distance[i.intValue()][0])), omga);
 			}
 			// 计算概率矩阵
 			for (int i = 0; i < cityNum; i++) {
@@ -200,8 +200,8 @@ Ant.java
 				for (Integer j : allowedCities) {
 					if (i == j.intValue()) {
 						p[i] = (Math.pow(pheromone[currentCity][i], alpha) * Math.pow(1.0 / distance[currentCity][i], beta)
-								* Math.pow((load_Q + Q[j.intValue()]) / Q_max, lamda) * Math.pow(
-								(L_max / (load_D + distance[currentCity][j.intValue()] + distance[j.intValue()][0])), omga))
+								* Math.pow((load\_Q + Q[j.intValue()]) / Q\_max, lamda) * Math.pow(
+								(L\_max / (load\_D + distance[currentCity][j.intValue()] + distance[j.intValue()][0])), omga))
 								/ sum;
 						flag = true;
 						break;
@@ -263,7 +263,7 @@ ACO.java
 		private Ant[] ants;
 		private int antNum;
 		private int cityNum;
-		private int MAX_GEN;
+		private int MAX\_GEN;
 		private float[][] pheromone;
 		private float[][] distance;
 		private float bestLength;
@@ -278,17 +278,17 @@ ACO.java
 		private float[] T;// 供应商的集货时间
 		private float V = 40; // 车辆速度
 	
-		private float Q_max = 41;
-		private float L_max = 200;
-		private float T_max = 7.0f;
+		private float Q\_max = 41;
+		private float L\_max = 200;
+		private float T\_max = 7.0f;
 	
 		public ACO() {
 	
 		}
 
-		public ACO(int antNum, int max_Gen, float alpha, float beta, float lamda, float omga, float rho) {
+		public ACO(int antNum, int max\_Gen, float alpha, float beta, float lamda, float omga, float rho) {
 			this.antNum = antNum;
-			this.MAX_GEN = max_Gen;
+			this.MAX\_GEN = max\_Gen;
 			this.ants = new Ant[antNum];
 			this.alpha = alpha;
 			this.beta = beta;
@@ -330,11 +330,11 @@ ACO.java
 				}
 			}
 		
-			bestLength = Integer.MAX_VALUE;
+			bestLength = Integer.MAX\_VALUE;
 		
 			// 随机放置蚂蚁
 			for (int i = 0; i < antNum; i++) {
-				ants[i] = new Ant(cityNum, Q, T, V, Q_max, L_max, T_max);
+				ants[i] = new Ant(cityNum, Q, T, V, Q\_max, L\_max, T\_max);
 				ants[i].init(distance, alpha, beta, lamda, omga);
 			}
 			reader.close();
@@ -346,8 +346,8 @@ ACO.java
 	
 		public void solve() {
 			final Wrap wrap = new Wrap();
-			for (int g = 0; g < MAX_GEN; g++) {
-				//----------JAVA_8 BEGIN
+			for (int g = 0; g < MAX\_GEN; g++) {
+				//----------JAVA\_8 BEGIN
 				wrap.gen = g;
 				Arrays.asList(ants).parallelStream().forEach(new Consumer<Ant>() {
 				
@@ -471,7 +471,7 @@ ACO.java
 
 		public static void main(String[] args) throws IOException {
 			ACO aco = new ACO(60, 10000, 1.0f, 2.0f, 0.4f, 0.6f, 0.15f);
-			aco.init("/Users/jeff/Documents/Eworkspace/AL_DEMOS/src/ant/data.dat");
+			aco.init("/Users/jeff/Documents/Eworkspace/AL\_DEMOS/src/ant/data.dat");
 			aco.solve();
 		}
 

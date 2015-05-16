@@ -5,7 +5,7 @@ url: http://westerly-lzh.github.io/cn
 author: Jeff Lee
 name: Jeff Lee
 email: westerly.lzh@gmail.com
-pygments: true
+highlighter: pygments
 safe: true
 
 
