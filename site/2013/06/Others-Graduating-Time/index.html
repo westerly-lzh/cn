@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>别人的毕业季 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>别人的毕业季</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>已经进入到六月份了，我还继续在学校赖着，在别人的毕业季节里，继续忙碌着。</p>
+
+<p>在五月的下半月，主要在做做两件事情，其一是移动地图应用，不过已经有一周多时间没有继续了。另一件事情是在在处理一个本体相关的开源软件(<a href="http://webprotege.stanford.edu/">WebProtege</a>)，至于什么是本体，可以用来做什么，并不是我要关心的问题，我的主要任务是对该软件增加一些功能，所以这一段时间都在看其设计架构及做功能扩展。这个开源软件使用的是<a href="https://developers.google.com/web-toolkit/">GWT</a>(google web toolkits)框架，关于GWT我这里不会介绍但会抱怨，基于Eclipse的GWT开发环境，对于新创建的GWT工程是没有问题，但当我吧WebProtege导入后，采用GWT的devMode进行调试时总是有莫名其妙的问题，最终我放弃了调试，只能每次修改完后再编译、打包、部署，漫长的过程让我纠结到蛋疼。经过这十多天的不断修改编译打包部署，目前总算把基本的功能搞定了。但愿明天开始的端午小假期可以轻松的渡过。</p>
+
+<p>当然这几天也要有走神的时候，于是就发现了一个做线性规划的小软件<a href="lpsolve.sourceforge.net/">pl_solve</a>,只有2M左右的大小，这对于对那些还用Mathlab或者其他的大型科学计算软件来说，可算是个超级轻量级工具了。而且，pl_solve专有的pl文件格式，支持我们教科书上的那种约束风格，即ax+by&lt;=c.对我们输入目标函数和条件约束来说实在是很方便,但同样也存在着规模性的问题，当问题的规模和维数变大时，无疑的我们面临的约束数和变量数都在增大，这对我们使用这个软件来解决问题带来了麻烦，当然我们可以使用其他的格式风格来解决无法使用循环等手段来处理多变量，矩阵高维等问题。现在我对这个软件还处于学习使用阶段，但已经让我轻松的解决了一个线性规划问题。而且pl_solve支持多种语言接口让我们可以很轻松的在各种应用中使用。</p>
+
+<p>这几天趁着网络比较好，顺便把我的Ubuntu系统升级了下，之前使用的是12.04，跑在我那个几年前的老古董电脑(Intel T5500@1.66GHz*2)上，对于这样一个配置来说，使用Ubuntu还算不错，但最近感觉速度越来越慢了，当然我知道需要清理下系统了，但据说最新的13.04对系统做了优化，于是我就手痒升级了，一些速度确实提升了不少，但是也让我安装在12.04上的应用除了不少问题，如google-chrome打不开，因为缺少一个共享库库文件，肯定是当时升级时不小心删除了，而我的RStudio也打不开了，现在还不知道什么问题。其他的一些应用还有待验证。除了升级电脑的系统外我也把手机的系统从2.3升到了4，结果让我很满意，首先是更省电了，其次是更漂亮的UI，当然，也更稳定了。之前经常出现的睡死现象这些天都没有出现。</p>
+
+<p>这几天也注意到<a href="http://www.oschina.net/">OSChina</a>也开始进军代码托管了，位置在<a href="http://git.oschina.net/">Git@OSC</a>。以后就可以不用再忍受github的龟速问题了，不过现在还没有了解osc是不是也支持像github那样的项目主页，如果支持的话，我倒是可以花时间在github和osc之间做一个镜像。关于git的学习，我纯粹是用到哪学到哪，所以到现在为止，我对git的了解也非常有限。oschina也有git的教程<a href="http://git.oschina.net/progit/">Pro Git</a>,内容不错，感兴趣的可以看下。</p>
+
+<p>他们还没有毕业离校，我的生活还要继续，就让我明天可以睡个懒觉，来过这个端午吧。</p>
+
+<hr />
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-06-08">2013-06-08</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#生活" title="生活">生活</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#生活" title="生活">生活</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/05/Core-Location-Framework-Source/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/06/Regression-Analysis-1/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

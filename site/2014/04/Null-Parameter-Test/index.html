@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>非参数检验 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>非参数检验</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<h2 id="section">两种处理方法比较的秩检验</h2>
+<p>设某问题涉及两种不同的处理方法，为了比较两种方法的优劣，假设有$N$个可以试验的个体，在这$N$个个体中，随机选取$n$个个体接受第一种处理方法，其余的$m=N-n$个接受另一种处理方法.样本接受两种处理方法后，放在一起排序，其中第一种方法处理的样本的顺序号为$S_1&lt;S_2&lt;…&lt;S_n$,第二种处理方法处理样本的顺序号为$R_1&lt;R_2&lt;…&lt;R_m$,基于$$(S_1,S_2…,S_n)或者(R_1,R_2,…,R-m)$而构造的检验方法，称为秩检验。</p>
+
+<p>定义秩和为:<script type="math/tex">W_s=\sum\_{i=1}^{n}s_i</script>, 则有$\frac{n(n+1)}{2} \leq W_s \leq \frac{n(2N-n+1)}{2}$,因此可以根据$W_s$定义<strong>Wilcoxon秩和检验</strong>：<script type="math/tex">P_{H_0}\\{W_s \geq c\\}=\alpha</script>,在此式中，若观测值$w_s \geq c$则可以拒绝$H_0$,若用p值可以表示为：<script type="math/tex">p=P\_{H_0}\\{W_s \geq w_s\\}=\sum\_{k\geq w_s}{P\_{H_0\\{W_s =k\\}}}</script></p>
+
+<p>Wilcoxon秩和检验假定了若$H_0$不真，则两方法的处理效果使得两组中的效果度量值趋于分散。</p>
+
+<blockquote>
+  <p>如果用A和B两种方法进行测量，若A比B优，则A得到的测量数据将更趋于集中，
+Wilcoxon秩和检验方法无法处理该种情况，因为即使两组中数据一个趋于分散，另一个趋于集中，但两组的秩和可能很接近。</p>
+
+</blockquote>
+
+<p>定义经验分布函数，对于一种处理方法得到的测量数据，设测量结果为$x_1\leq x_2 \leq …\leq x_k$，则经验分布函数可以定义为：<script type="math/tex">F_k(x)=\cases{0,{x\lt x_1} \\\\\frac{i}{k},{x_i \leq x \leq x_{i+1}} \\\\1,{x \geq x_k}}</script></p>
+
+<p>定义$D_{m,n} =\max\{|G_m(x) - F_n(x)|\}$,则$D_{m,n}$可以用来表示两组数据之间的差异，则可以定义：<script type="math/tex">P\_{H_0}=\\{D\_{m,n} \geq c\\}=\alpha</script>为Smirnov检验</p>
+
+<p>由于Smirnov检验的备择假设包含了Wilcoxon检验的备择假设，所以能用Wilcoxon检验的地方，也一定可以使用Smirnov检验，但Wilcoxon检验差异性的能力要比Smirnov检验的能力要高。</p>
+
+<h2 id="section-1">成对分组设计下的两种处理方法的比较</h2>
+
+<p>前面讨论的时将$N$个个体随机的分为两组，由于分组的随机性，可能导致两组在处理之前就存在较大的差异性，可以通过下面的方式解决：
+&gt; 将给定的个体首先分为若干组，使得每一小组内各个个体之间的差异性较小，这样的小组满足齐性，再将各个小组内的个体随机的分为两部分，接受不同的处理方法。
+&gt;</p>
+
+<p>上面处理数据的方式为成对分组设计处理。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-04-02">2014-04-02</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#统计" title="统计">统计</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#检验方法" title="检验方法">检验方法</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/03/Clustering-Review/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/04/Linux-Miscellaneous-4/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

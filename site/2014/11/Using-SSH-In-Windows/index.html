@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>Windows2008 开启 SSH | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>Windows2008 开启 SSH</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<h2 id="section">问题情境描述</h2>
+<p>我由一个远程的VMware的虚拟机，该虚拟机具有独立的IP地址，通过本地的vSphere Client进行连接。并且该虚拟机处于一个巨大的局域网内部，而且该虚拟机不能连接到外网。本地的vSphere Client可以ping通该虚拟机，但不是处于相同的局域网段。于是我需要一个服务来支持本地到该虚拟机的文件共享。</p>
+
+<h2 id="section-1">方案</h2>
+<p>我在该虚拟机上初始安装时拷贝了一个freeSSHd的软件来支持ssh服务。只需要在该服务器上安装该软件，适当的配置就可以使得该服务器支持ssh，sftp等服务。</p>
+
+<h2 id="scp">为什么scp不行</h2>
+<p>但是我在虚拟机上安装好freeSSHd后，虽然可以ssh到该虚拟机上，但是scp命令却不能连接到该虚拟机。Stack Overflow给出的解释是：</p>
+
+<blockquote>
+  <p>scp, as many other things, is two-side protocol. It requires scp to be present on both client and server. When you issue copy command, ssh connects to given server and spawns scp process, which your local scp then communicates with. In your case, there is no scp on server, so no communication possible.</p>
+</blockquote>
+
+<p>参见<a href="http://stackoverflow.com/questions/22624881/freesshd-cannot-be-accessed-by-scp">freeSSHD cannot be accessed by scp</a> .</p>
+
+<h2 id="sftp">开启SFTP服务</h2>
+
+<p>由于再次通过usb等方式拷贝到虚拟机软件已经不现实了（代价比较高），所以只能放弃scp的使用，转而使用sftp。sftp的开启在freeSSHd上非常简单。</p>
+
+<p><strong>注意：</strong> 在每次更改freeSSHd时，我的体验是仅仅通过退出并重freeSSHd服务是不可以的。所以，我只好每次重启虚拟机。</p>
+
+<h2 id="winscp">客户端使用WinScp</h2>
+
+<p>WinScp客户端软件内置了支持sftp，所以只要配置下，就可以连接到虚拟机的sftp服务器上了。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-11-09">2014-11-09</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#ssh" title="ssh">ssh</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Windows" title="Windows">Windows</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#SSH" title="SSH">SSH</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#SFTP" title="SFTP">SFTP</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/10/JavaScript-Print-Part-Page/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/12/JPA-CascadeType-Explaining/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

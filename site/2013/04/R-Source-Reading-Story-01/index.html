@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>R代码阅读随笔[01] | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>R代码阅读随笔[01]</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>开始学习R，从阅读源码开始吧。
+不得不说R的语法很让人费解。虽然有<a href="http://cran.r-project.org/doc/manuals/R-lang.html">r-language</a>文档作为辅助说明，但还是让熟悉Java，Python等语言的程序员无法理解R中那些让人不得不吐槽的语法，个人觉得，如果R的语法能如MathLab那样，那么R将会有更多的受众。</p>
+
+<hr />
+<p>##base
+—
+###A
+—–</p>
+
+<h3 id="allequalr">all.equal.R</h3>
+<p>all.equal的第一行语法就不是很明了，这个UseMethod时用来做什么的？
+看UseMethod的文档还是云里雾里的。
+&gt;all.equal &lt;- function(target, current, …) UseMethod(“all.equal”)</p>
+
+<p>当该方法返回为TRUE时，说明两个比较对象相等，返回其他的值时就意味着不等了。</p>
+
+<p>在<strong>all.equal.default</strong>中看到switch的用法，确实很神奇，按照r-language中的解释，switch(statement,list),或者switch(statement,…)先对statement求值，如果返回值是一个数字，那么取得list[value]对应的expression进行求值并返回，如果value是一个字符串，那么…中与之匹配的name=expression中的name对应的expression将会被求值并返回，如果没有匹配的，看是否还有default子句，如果有就返回default的求值，否则返回NULL。如：</p>
+
+<blockquote>
+  <p>y &lt;- “fruit”</p>
+</blockquote>
+
+<blockquote>
+  <p>f &lt;- switch(y,fruit=”banana”,vegetable=”broccoli”,”Unknown”)</p>
+</blockquote>
+
+<blockquote>
+  <p>结果就是f == “banana”</p>
+</blockquote>
+
+<p>在R中向量或者列表的index操作就比较丰富了，各种切片(slice)，还有那些list[!booleans],list[-index],在学python时以为python的下标操作就够灵活的了，这一个简直就秒杀python了。
+下面的代码比较神奇，不过我喜欢（这难道就是函数式编程的魅力？？？）
+&gt; x &lt;- TRUE ## FALSE</p>
+
+<blockquote>
+  <p>(if(x) c else sum)(1,2)</p>
+</blockquote>
+
+<p>这是R的特点还是普遍的函数式编程的特点呢？这里我给不出答案，毕竟按照编程的年龄来算，我还是个新手。
+在<em>**all.equal.language</em>中，出现的paste0,和之前出现的paste的差别在于paste0连接的字符串之间时没有间隔的，而paste默认连接的字符串之间有间隔，当然可以通过设置paste方法中的sep参数来指定分割符。文档中说时paste0效率稍微高一点，其他的就等效于paste(x,sep=””)。</p>
+
+<p>all.equal.R中的attr.all.equal就是一个递归的调用all.equal了，这样就可以进行更深层次的比较了。</p>
+
+<h3 id="allnamesr">all.names.R</h3>
+<p>all.names方法的实现类似于Java中JNI的那种方式吧(自认为是这样的，也不知道是否恰当)，把具体实现交给了C，这样效率更高了。调用的模式就如下:
+&gt;all.names &lt;- function(expr, functions = TRUE, max.names = -1L, unique = FALSE)</p>
+
+<blockquote>
+  <p>.Internal(all.names(expr, functions, max.names, unique))</p>
+</blockquote>
+
+<p>文档中说时获取expression中的所有names，做的事情应当就是把一个expression分解成基本的符号单位(如sin(x+y)就会被分解成“sin”，“+”，“x”，“y”，具体分解的顺序应当是按照语法树的结构)。现在还没有研究过.Internal的机制，等以后在说吧。</p>
+
+<p>all.vars方法就是只抽取出expression中的变量名字，而把方法名忽略（如上例的”sin”，”+”）
+###aperm.R
+这个方法对一个array做转置，但是对其中的perm这个参数不是很明了，在高维数组中，转置是如何定义的？其中perm的取值范围和array的dim时有关系的，具体什么关系也没有高清楚。这个方法需要传入一个array对象，在创建array时，一不小心把array中dim这个参数vector设置的大了些，电脑立马就处于full-busy的状态了。
+###append.R
+按照给定的after参数，向已知list中添加元素（按照代码的实现，返回的list对象已经不是原来的对象了(作为一个Java或者Python用户，这里虽然时append一个元素，但是具体的实现却是像Java中的字符串拼接一样，得到的字符串是一个新的对象)）。用法和Python中的不一样，按照R中该方法给定的参数，我觉得这个方法名叫做insert更为合适，因为它指定了插入元素的位置。</p>
+
+<h3 id="applyr">apply.R</h3>
+<p>这个方法在很多R语言的书中都有介绍(apply方法簇)，按照文档上说的，该方法apply(x,margins,fun,…)，按照margins指定的顺序对x应用fun[ction],但对margins这个参数的用法不太明白。文档中说当margins=1时表明是row，2表明时column，c(1,2)表明时row和column。如下：
+&gt;f &lt;- function(x) x+1</p>
+
+<blockquote>
+  <p>x &lt;- matrix(1:9,c(3,3))</p>
+</blockquote>
+
+<blockquote>
+  <p>r &lt;- apply(x,1,f)</p>
+</blockquote>
+
+<blockquote>
+  <p>c &lt;- apply(x,2,f)</p>
+</blockquote>
+
+<p>得到的结果是c和r互为转置。按照文档中的说明，margin的不同只是f应用于x的顺序不同。但是这里明显是有多余操作的：当f应用于x的每个元素生成返回矩阵时，是按行生成的，而并没有遵循：x某个位置的元素在应用了f后生成返回矩阵的位置应当和在x中的位置一致。其中这一行newX &lt;- aperm(X, c(s.call, s.ans))，对margin参数为1时，对x进行了转置。当margin为2时，保持矩阵的样式未变。</p>
+
+<h3 id="arrayr">array.R</h3>
+<p>array()这个方法每什么可说的，但<strong>array.R</strong>中有个slice.index，这个方法的说明也让我挺费解的，反正我暂时没有搞明白这个方法的用处。</p>
+
+<h3 id="asr">as.R</h3>
+<p>这个脚本里面也没什么可说的，就是一堆转换方法，倒是最后一个as.qr给的挺无赖的，
+&gt;as.qr &lt;- function(x) stop(“you cannot be serious”)</p>
+
+<p>程序员偶尔也是需要牢骚下的。</p>
+
+<h3 id="assignr">assign.R</h3>
+<p>assign就没什么可说的，相当于 &lt;- 这个赋值符号，不过通过assign这个方法可以指定environment，但 &lt;- 的操作却只能作用于当前environment。关于environment，我的理解就相当于Java或者Python中域（scope）的概念吧，在这个域中，维持了一堆当前的变量，方法等等，当然还有一个指向父域的指针，这里父域和子域的关系，就相当于Java中类的继承关系吧，在Java的继承体系中，方法，变量的寻找，首先时在子类中进行的，找不到才取父类中寻找，这里的environment也有类似的概念。</p>
+
+<p>该文件中还有一个list2env方法，这个方法就是拥一个list的对象来初始化一个environment，当然list中时什么都可以有的，比如变量，方法，等等，这样就可以把enviroment初始化了。默认情况下，该environment时作为当前域的兄弟节点的，因为在默认情况下，该域的parent参数是设置成当前域的parent的。</p>
+
+<h3 id="attachr">attach.R</h3>
+<p>在几本关于R的书上都看到过关于attach的介绍，但最后都会有一个建议，即不建议使用attach方法。这个方法的作用，就像在Java中更改Java中包的搜索顺序一样，比如一个简单的例子，JDK中有一个类，我自己些的package中也有一个类，他们的名字及包路径都是相同的，默认情况下，Java优先搜索JDK中的方法，但是我人为的设置，使得Java优先搜索我自己的package，这样就会首先找到我自己的package中定义的类了。这里的attach方法，就是把一些额外的library或者如文档里所谓的“database”添加到搜索路径中，当然如果一个人进行R程序开发，这只要记得及时unattach掉这些database就Ok了，但是如果是多人协作开发，那么就会有很大的问题了，就像在C里面，路人甲申请了一段内存，而他并没有释放掉，却寄希望于一块开发程序的路人乙、丙或者丁来帮他释放掉，这太危险了。</p>
+
+<p>当然attach.R中也提供了detach这个方法来释放掉attach的database，但还是不建议在程序中使用attach，用文档中的话说就是side effect比较多</p>
+
+<p>看到这里，感觉R中任何语句都时可以求值的，这一点很强悍，比如：
+&gt; x &lt;- if(bool) “TRUE” else “FALSE”</p>
+
+<p>而在其他如Python，虽然同为脚本语言，却没有这样的特性。</p>
+
+<h3 id="attrr">attr.R</h3>
+<p>这里面又是一个神奇的用法，
+&gt;`mostattributes&lt;-` &lt;- function (x,…)</p>
+
+<p>这里需要注意的时键盘上～这个符号,这才是英语的连的开引号(`)，当然还有闭引号(‘)，必须承认在以前的文档写作时从来没有注意这种引号的区别，直到前几天在Letax中才看到，原来英文的引号是有开闭之分的（在中文中当然是有这种区别的了），上面只是对引号的觉得奇怪，更奇怪的应当是这种语法吧，按照我现在的理解，这种方法的用法可以是这样子的：
+&gt;mostatributes(x) &lt;- value</p>
+
+<p>这对熟悉Java或者Python的用户来说实在时要惊艳下了。</p>
+
+<hr />
+<p>##B
+—-
+###backquote.R
+拥指定域中的变量替换表达式中的变量引用，被引用的变量一般使用”.(var)”来声明。比如:
+&gt;a &lt;- “abc”
+&gt;
+bquote(b == .(a))</p>
+
+<p>则输出为b==“abc”，源码中先判断是否为pairlist，然后在查看pairlist的文档时，又看到一段神奇的代码
+&gt; f &lt;- function() x
+&gt;
+&gt;formals(f) &lt;- al &lt;- alist(x=,y=2+3,…=)</p>
+
+<p>这样，f这个方法的定义就变成下面这个样子了：
+&gt; function(x,y=2+3,…) x</p>
+
+<p>熟悉Java和Python人要咋舌了吧，程序的世界无奇不有，快从Java和Python的小圈子中跳出来拥抱R吧。</p>
+
+<h3 id="backsolver">backsolve.R</h3>
+<p>该脚本中包含两个方法，forwordsolve。backsolve，是用来解线性方程组的比如R×X=b，但对该线性方程组的系数矩阵做了假设，即R为<strong>上三角矩阵</strong>或者<strong>下三角矩阵</strong>，就算在调用这两个方法时传入的R参数并不是三角矩阵，那么在方法的实现内部也会对R做调整，调整为uper.tri参数所指定类型的三角阵。当然了像解方程组这样大计算量的动作，R会毫不犹豫的委托给C或者其他的效率更高的实现了。这里就是使用了.C这个函数来调用外部接口的。具体.C的用法如何，还要等到后面来观察。</p>
+
+<h3 id="besselr">Bessel.R</h3>
+<p><a href="http://zh.wikipedia.org/wiki/贝塞尔函数">贝塞尔函数</a>，实现了贝塞尔函数第一类，第二类和变形贝塞尔函数。这里不做具体解释，因为我也时不懂。</p>
+
+<h3 id="bindenvr">bindenv.R</h3>
+<p>这种对域、变量进行锁定，解锁的操作，从之前的编程经验上来说，确实很神奇，这样极大的增强了程序员对程序的控制能力。但这种操作，对于并发性编程，是机遇还是挑战呢？以我现在对R的了解程度来说，我无法给出答案。</p>
+
+<h3 id="builtinsr">builtins.R</h3>
+<p>返回所有的内建对象。当然这里的内建对象是symbol table中的，我们可以通过传递internal参数来指定是不是返回通过.internal方法可以使用的对象。</p>
+
+<h3 id="byr">by.R</h3>
+<p>类似于apply函数簇，按照文档上的说明，by时对tapply的封装。而在其中看到这样一个还算时比较值得记忆的应用方式
+&gt;data
+&gt;
+&gt;FUN
+&gt;
+&gt;FUNx &lt;function(x) Fun(data[x,])
+&gt;
+&gt;NumofRows &lt;- nrow(data)
+&gt;
+&gt;tapply(seq_len(NumofRows),IND,Funx)</p>
+
+<p>观察Funx的声明，把data作为内部变量使用了，像Python闭包中的用法吧。</p>
+
+<hr />
+<p>##C
+—
+####callCC.R
+这个脚本里的方法本身很简单，就是提供了一种程序退出机制。按照文档中的说明，是一种非本地退出机制，按照我的理解，一般的退出机制是当方法执行到结束或者异常引起的，但这里的退出机制却是指定了只要一执行完某个函数或者某行代码，就自动退出了。比如：
+&gt;callCC(function(k) repeat k(1))</p>
+
+<p>只要k(1)这个方法一执行，就自动退出了。这里的退出就是使用了return的方式，就像我们在这个k(1)这个方法内插入了一条return语句一样。</p>
+
+<h3 id="catr">cat.R</h3>
+<p>一种格式化的print方法，当然这里的print并不是说只能在控制台打印，这里可以打印到文件中，和unix或者linux中的cat命令有相似之处。cat方法不如print方法方便，但提供了更多的灵活性。</p>
+
+<h3 id="characterr">character.R</h3>
+<p>字符串操作方法，这里需要注意substr和substring的区别
+substr接受start和stop参数，用来指定子串的开始和结束点，方法内是把start和stop强制转换成integer处理的。而substring方法却是内藏玄机。首先substring方法中的first和last参数不一定是integer，还可能时vector等类型，比如
+&gt;start &lt;- c(1,2)
+&gt;
+&gt;last &lt;- c(3,4,5)
+&gt;
+&gt;substring(“ABCDEF”,start,stop)</p>
+
+<p>上面代码返回的结果时这样计算出来的，首先把start和last转变成等长vector，具体的如何转变，参照<a href="http://cran.r-project.org/doc/manuals/R-lang.html">r-lang</a>中Recycling-rules这一小节。然后依次按照start和stop中元素位置顺序从字符串中取出start和stop的位置之间的字串。当然，代码中并不是像我上面说的这样子实现的，代码中是把字符串rep后再像substr那样子处理的。其本质区别就在于substring中对字符串进行了rep处理，而substr中没有进行。
+其中的abbreviate方法，不能算是一个可以得到很好结果的方法，毕竟在英语中缩写的规律并不是有很明了的规定。
+###chol.R
+R中chol的具体实现是交给Fortran实现的，暂时未看具体实现代码。这里仅对一些常用的矩阵分解做介绍，这里的讨论仅限于实数域。</p>
+
+<p>Cholesky分解,对一个实对称正定方阵进行分解 A = L^t * L,
+其中L为一个上三角阵，L^t 是对L的转置。下面是一个简单的chol的R代码实现。</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">###参数x必须是一个实对称正定阵，返回一个上三角阵</span>
+<span class="n">chol_demo</span> <span class="o">&lt;-</span> <span class="n">function</span><span class="p">(</span><span class="n">x</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="ow">is</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">x</span><span class="p">)){</span>
+    <span class="n">d</span> <span class="o">&lt;-</span> <span class="n">dim</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">l</span> <span class="o">&lt;-</span> <span class="n">matrix</span><span class="p">(</span><span class="n">rep</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="n">nrow</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">ncol</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">seq_len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">])){</span>
+      <span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">((</span><span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">seq_len</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span><span class="o">^</span><span class="mi">2</span><span class="p">))</span>
+      <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">&lt;</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]){</span>
+        <span class="k">for</span><span class="p">(</span><span class="n">j</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">])){</span>
+          <span class="n">l</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">-</span><span class="nb">sum</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">seq_len</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span><span class="o">*</span><span class="n">l</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">seq_len</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)]))</span><span class="o">/</span><span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span>
+        <span class="p">}</span> 
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+  <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+    <span class="n">stop</span><span class="p">(</span><span class="s">&quot;x is not a matrix&quot;</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>脚本里面的另一个方法chol2inv，按照chol.R的定义A=L^t * L,其中L为上三角阵。那么chol2inv做的事情就如下：chol2inv(L) = A^-1 ,即chol2inv根据L求得A的逆。
+###colSums.R
+包含colSums,rowSums,colMeans,rowMeans四个方法，对数组或者矩阵按行或者按列求和与求均值。这些操作是可以通过使用apply，FUN参数指定为mean或者sum，对MARGIN参数相应的值就可以得到相同的结果，但，明显colSums.R中的方法更易于使用，文档中也说了速度更快。
+###conditions.R
+R提供的一套异常处理机制，没看明白文档说明。等以后慢慢来吧。
+###conflicts.R
+检验所给的搜索路径中，有没有命名重复的变量（包括函数名）.在这里脚本文件中突然明白了一个问题，之前在看代码中有遇到类似var[[i]]这样的下标取值方式，现在才明白，是怎么一回事var为一个向量（vector），那么var中的元素类型时要求保持一致的，比如var中的第一个元素为list类型，那么要获取这个list类型的元素，我们可以通过var[[i]]来取得，这样如果想获得var中第i个元素(假定类型为list)的第j个元素我们可以这样获取var[[i]][[j]].但是，我们通过var[i]
+var[i][j]或者var[i][[j]]甚至var[i][j][j][j][j][j]…（很多个[j]）这样子来求值，R中并不会出错，这是让人很费解的。也许R的语言规范还是不够规范吧，不像Java有专门的specification来严谨的定义语言的特性。
+###connections.R
+采用Java中的概念，这个脚本中定义了输入输出流的操作，当然这里的connection还包括网络连接。
+通用的，像这种系统资源(如文件，socket)，在使用是必须要包括open，use和close这三个阶段的。这里也提供了一些方法来查看当前已经建立的connections。
+###constants.R
+提供了常量的定义，如英文字符，月份
+###contributors.R
+提供了R的贡献者信息。
+###converters.R
+用来把R对象转换成C的指针，不过已被废弃。
+###cut.R
+把一个向量通过指定的breaks参数分割成区间（以factor形式），返回的结果是向量中每个元素所在的区间的factor。需要注意的是labels的数量和breaks指定的区间数量必须相等（而不是和breaks参数的元素数目相等）。如
+&gt;x &lt;- seq_len(10)
+&gt;
+&gt;cut(x,breaks=c(0,13,16),labels=c(“A”,”B”))</p>
+
+<p>这里需要注意breaks=c(0,13,16)，实际上指定了两个区间（0,13],(13,16]所以labels中也只有两个元素。
+但该方法如下时:
+&gt;cut(x,breaks=as.vector(c(1,13,16)),labels=c(FALSE,FALSE))
+&gt;
+&gt;cut(x,breaks=as.vector(c(1,13,16)),labels=c(TRUE,TRUE))</p>
+
+<p>返回的结果却是形式上不一致的。而且下面的语句执行时有警告说时factor有重复，但是上面的同样是factor有重复却没有警告。</p>
+
+<hr />
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-04-15">2013-04-15</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#it" title="it">it</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#R" title="R">R</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/04/Saw-CRISP-again/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/05/R-Source-Reading-Story-02/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

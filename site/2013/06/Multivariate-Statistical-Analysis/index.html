@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>R语言统计分析学习系列之多元统计分析 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>R语言统计分析学习系列之多元统计分析</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>这里仍然是介绍在R中怎样做多元分析，其中包括判别分析（Discriminat Analysis），聚类分析，主成分分析，因子分析，对应分析，典型相关分析。主要参考了多元统计分析及R语言建模(王斌会，第二版)，R语言与统计分析(汤银才)及R语言实践(Rotert I. Kabacoff)。本人是学管理学出身，对一些比较深奥的统计建模过程不是很了解，所以这里只是讲述如何使用R来做上述的分析任务，具体的推理过程就略过了。原本想再这上面采用mathjax的，但是jekyll渲染后的效果不是很好，就先作罢了。
+##判别分析(Discriminat Analysis)
+判别分析是用于判别样本具体所属类型的一种统计分析方法，这里的前提是总体的分类已经确定。这里主要介绍Fisher判别和Bayes判别。Fisher判别属于确定性判别，这里介绍其中的线性判别和距离判别；而Bayes判别属于概率判别。</p>
+
+<h3 id="section">1.1 线性判别</h3>
+<!--
+
+线性判别采用线性判别函数 $$Y = {a_1}{X_1} + {a_2}{X_2} + \cdots +{a_n}{X_n}$$,使得该函数能够根据$X_i$ 的值区分各个样品。在该线性判别函数中，重要的是需要根据已有样本计算出的系数向量$\overrightarrow{a}$能使得各个类别之间的变异尽量大，而类内的变异尽量小。这里按照上述的要求如何求得$\overrightarrow{a}$就不做表述，但在有$Y = \mathbf{aX}$后,我们可以把各个类别的样品指标均值带入$Y_i = \overrightarrow{a}\overline{X_i}$, 求得$${Y_1},{Y_2},{\cdots},{Y_n}$$，其中$Y_1 < Y_2  < \cdots < Y_n$,则新样本$X$指标带入指标函数得到$Y$后，只需要先判断$Y$在 $[Y_i , Y_{i+1}]$,然后比较$Y$与$\frac{Y_i + Y_{i+1}}{2}$的大小，当$Y > \frac{Y_i + Y_ {i+1}}{2}$时，$X$属于$Y_{i+1}$类别，反之属于${Y_i}$类别
+
+-->
+<p>线性判别采用线性判别函数，这里建立的线性判别函数为Y = a_1 X_1 + a_2 X_2 + … + a_n X_n ,使得该函数可以根据样本的不同指标(X_i)来区分样本。在该线性判别函数中重要的是求得判别函数的系数，使得在同组内部的变异尽可能的小，而不同组之间的变异尽可能的大，这里的系数也就是Fisher判别方法中的投影方向。在R中我们可以使用MASS包中的lda函数来进行线性判别分析。取得判别结果后，我们可以使用样品的真是分类和预测分类进行列链表分析，在使用lda时，其结果中线性判别系数(Coefficients of linear discriminants)一项，可能出现多组，而(Proportion trace)一项则指明了每一组线性判别系数在对样本进行分组判别时的贡献大小。</p>
+
+<pre><code>data(iris)   
+ld &lt;- lda(Species ~ Sepal.Length + Sepal.Width + Petal.Length + 	Petal.Width,data=iris)
+ld ##查看判别效果
+z &lt;- predict(ld)
+cbind(iris$Species,z$class) ##对比实际类型和判别分类
+tab &lt;- table(iris$Species,z$class) ##列链表显示判别结果
+tab
+diag(prop.table.table(tab,1))
+</code></pre>
+
+<p>在做判别分析中，要始终牢记样本集中样本的指标是否等方差，及协方差阵是否相同；不同的方差和协方差，在使用lda时，如果没有指明，其判别结果会有不同。</p>
+
+<h3 id="section-1">1.2 距离判别</h3>
+
+<p>距离判别中重要的是选择适当的距离函数，在下面的聚类分析中会再次提到距离的定义，所采用的距离定义不同，会导致不同的判别和聚类结果。在判别分析中比较常用的距离是马氏距离，但具体采用何种距离定义方式要根据实际的问题来决定。这里根据距离定义，会产生距离函数W(x)，对于k个总体,某个样本到各个总体的距离最小为 W_i = min(W(x)),则所要判定的样本可归入第i类别。在R中可以使用MASS包中的discrim.dist函数进行判别，默认情况下，该函数假定样本的方差不等。在王斌会那本书上，有一个mvstats包，提供了有供距离判别的函数，但没有找到该包，所以这里就作吧了。</p>
+
+<h3 id="bayes">1.3 Bayes判别</h3>
+<p>Bayes判别相比较前面的线性判别和距离判别，考虑了各个总体出现的概率(即先验概率)和错判的损失函数，综合考虑这两个条件，则使得损失函数最小化，可以作为判别分类的标准.在R中，我们依然可以使用lda函数进行Bayes判别，与之前说的线性判别不同的是，我们只要指定先验概率参数(prior)，使用lda进行Bayes判别时，情况变得有些复杂，具体可以参见lda的使用帮助。</p>
+
+<p>以下观点来自多元统计分析与R语言建模(王斌会,第二版):
+&gt;判别分析中，距离判别和Fisher判别(线性判别)对判别变量的分布类型没有要求，两者只要求各类总体的二阶矩存在，而Bayes判别则要求知道变量的分布类型；当仅有两个总体时，若他们的协方差矩阵相同，则距离判别和Fisher判别等价，当判别变量服从正态分布时，他们还和Bayes判别等价，而当两类的协方差矩阵不同时，Fisher判别使用的是他们的额合并协方差矩阵，距离判别也与Bayes判别不同</p>
+
+<h2 id="cluster-analysis">聚类分析(Cluster Analysis)</h2>
+
+<p>聚类分析和上面讲过的判别分析虽然都是要把样本分类，但是其区别在于判别分析是在已知总体的分类情况下，把新样本归到已知的某一类中；而聚类分析是在未知总体的分类情况下，把样本集按照某种分类方法区分成若干类。在聚类分析中常区分为Q型聚类和R型聚类，Q型聚类分析时对样品进行分类处理，而R型聚类是对变量进行分类处理，在经济管理中多用Q型聚类(王斌会，多元统计分析及R语言建模)。下表列出了聚类分析中一些常用的统计量。</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>聚类统计量</td>
+      <td>类型(R参数名)</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>——-</td>
+      <td>—-</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>绝对值距离(Manhattan)</td>
+      <td>距离(manhattan)	&lt;!–</td>
+      <td>sum(</td>
+      <td>x_ik - x_jk</td>
+      <td>,k=1, k=p)–&gt;</td>
+    </tr>
+    <tr>
+      <td>欧氏距离(Euclidean)</td>
+      <td>距离(euclidean)	&lt;!–</td>
+      <td>[sum((x_ik - x_jk )^2 ,k=1, k=p)]^0.5–&gt;</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>闵可夫斯基距离(Minkowski)</td>
+      <td>距离(minkowski)	&lt;!–</td>
+      <td>[sum((x_ik - x_jk )^q ,k=1, k=p)]^(1/q)–&gt;</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>切比雪夫距离(Chebyshev)</td>
+      <td>距离(q = inf)		&lt;!–</td>
+      <td>max(</td>
+      <td>x_ik - x_jk</td>
+      <td>, k=1, k=p)–&gt;</td>
+    </tr>
+    <tr>
+      <td>马氏距离(Mahalanobis)</td>
+      <td>距离				&lt;!–</td>
+      <td>(X_i - X_j )^’ S^-1 (X_i - X_j)–&gt;</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>兰氏距离(canberra)</td>
+      <td>距离(canberra)		&lt;!–</td>
+      <td>–&gt;</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>夹角余弦</td>
+      <td>相似系数			&lt;!–</td>
+      <td>–&gt;</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>相关系数</td>
+      <td>相似系数			&lt;!–</td>
+      <td>–&gt;</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在R中，有dist函数可以用来计算各种距离，其中method参数指明了采用那种距离统计量，而p参数则指明在采用Minkowski距离统计量时的指数项(Minkowski距离是绝对距离，欧氏距离和切比雪夫距离的推广)</p>
+
+<h3 id="section-2">2.1 系统聚类法</h3>
+<p>上面是样本间距离的定义，而在聚类分析中，还有一类距离需要定义，这就是类与类之间的距离定义。在R中，hclust方法的method参数提供了，single(最短距离法),ward(Ward法，利差平方和法),complete(最长距离法),average(类平均距离),mcquitty(),median(中间距离法),centroid(重心法)。下面列出系统聚类法的一般步骤(王斌会，多元统计分析及R语言)：</p>
+
+<ol>
+  <li>计算n个样品两两间的距离，得距离矩阵D。</li>
+  <li>构造n个类别，每个类别只包含一个样品。</li>
+  <li>合并距离最近的两个类为一个新类。</li>
+  <li>计算新类与当前各个类之间的距离，若类个数为1，转到步骤（5），否则回到步骤（3）。</li>
+  <li>画出聚类图</li>
+  <li>决定聚类的个数和类别</li>
+</ol>
+
+<p>下面以R中iris数据集为例</p>
+
+<pre><code>d &lt;- dist(cbind(iris$Sepal.Length,iris$Sepal.Width,iris$Petal.Length,iris$Petal.Width),method='minkowski',p=2)
+hc &lt;- hclust(d,method="centroid")
+plot(hc)
+</code></pre>
+
+<h3 id="kmeans">2.2 快速聚类法（kmeans聚类法）</h3>
+<p>快速聚类法首先要指定总体中又多少个类别，然后按照距离进行聚类；kmeans聚类和系统聚类的区别就在于系统聚类会产生虽有的聚类层次，而kmeans聚类只会产生指定的聚类层次，相比下有明显的优势。但这种优势是在指定聚类个数的前提下实现的，但系统中具体有多少个类别，这还需要使用其他方法判定。在实现中，我们也可以不指定类别，而是通过指定每个类的初始中心来代替，因为在kmeans聚类中，初始的聚类中心位置并不会对最终的聚类结果产生影响。
+我们可以通过R中的kmeans函数来进行快速聚类分析</p>
+
+<p>kmeans聚类，对样本集中的噪音和孤立异常点比较敏感，少量的该点会对聚类结果产生比较大的影响，</p>
+
+<h3 id="section-3">2.3 聚类分析中的注意点</h3>
+<ol>
+  <li>最好做数据的标准化或者其他的变换，以适应相应的聚类模型，并且可以防止量纲对聚类分析的影响。</li>
+</ol>
+
+<h2 id="principle-component-analysis">3 主成分分析(Principle Component Analysis)</h2>
+<p>主成分分析是通过降维技术，把多维空间中的相关变量指标化简为少量且独立的新的综合指标。这里需要注意的是，首先，样本的指标变量要有所相关，如果不相关，那么降维目的就很难实现了；新产生的综合性指标变量的方差(变异)要尽量大，这样就越能反映原来数据的差异。主成分分析用到了线性代数中的特征值和特征向量。主成分分析的过程：</p>
+
+<ol>
+  <li>将原始数据标准化，消除变量间量纲和数量级的影响</li>
+  <li>求标准化数据的相关矩阵</li>
+  <li>求相关矩阵的特征向量和特征值</li>
+  <li>计算方差贡献率和累计贡献率，每个主成分的贡献率代表了原数据的总信息量的百分比</li>
+  <li>确定主成分，</li>
+  <li>用原指标的线性组合来计算各个主成分的得分</li>
+  <li>计算综合得分</li>
+  <li>得分排名</li>
+</ol>
+
+<p>在R中做主成分分析，我们可以使用princomp函数，主要由两种调用方式</p>
+
+<ul>
+  <li>princomp(formula,data =NULL ,…)</li>
+  <li>princomp(x,cor=FALSE, scores = TRUE,covmat=NULL,)</li>
+</ul>
+
+<p>cor参数表明是使用样本的相关矩阵做主成分分析(cor=TRUE)，还是使用样本的协方差阵做主成分分析(cor=FALSE)，</p>
+
+<pre><code>x &lt;- cbind(iris$Sepal.Length,iris$Sepal.Width,iris$Petal.Length,iris$Petal.Width)
+pc &lt;- princomp(x,cor=TRUE,scores=TRUE,data=iris)
+summary(pc)
+screeplot(c,type='lines')
+</code></pre>
+
+<p>R帮助文档中强调：</p>
+
+<blockquote>
+  <p>princomp only handles so-called R-mode PCA, that is feature extraction of variables. If a data matrix is supplied (possibly via a formula) it is required that there are at least as many units as variables. For Q-mode PCA use prcomp.</p>
+</blockquote>
+
+<p>当然也可以使用psych包中的principal函数,也可以进行主成分分析，然后使用fa.parallel函数和scree函数来展现主成分分析结果。在R中使用psych可以增强,</p>
+
+ 	library(psych)
+ 	pc &lt;- principal(iris[,1:4],nfacotrs = 2,rotate=”varimax”)
+ 	fa.parallel(iris[,1:4],fa=’pc)
+
+<p>在上面的代码中，我们在调用principal函数时，传递了rotate参数，表示对主成分进行方差最大化旋转，旋转是使得成分荷载矩阵变得更容易解释。而使用fa.parallel函数使得在R中提供了基础screeplot函数绘制的图形上增加了特征值大于1的基准线和100次模拟的平行分析建议线。结果中PC指的是成分载荷，h2是公因子方差，u2是成分唯一性，指方差无法解释的比例(1-h2)，SS loadings包含了与主成分相关的特征值，Proportion var表示每个主成分对整体数据的解释程度。当我们使用rotate参数时，PC编程RC表示成分被旋转。</p>
+
+<p>psych包是一个比较大的包，里面实现的功能比较多，这里只是简单的使用。</p>
+
+<h2 id="factor-analysis">4 因子分析(Factor Analysis)</h2>
+<p>因子分析和主成分分析的区别在于主成分分析将有相关关系的原变量综合成几个主要成分，用较少的综合指标来代替较多的指标；而因子分析则是研究这些原变量为什么有相关关系，这就是存在一个潜在的变量来支持着这些具有相关关系的变量，这个潜在变量就是我们在因子分析中所要关注的。</p>
+
+<p>因子分析模型为X = AF + ℇ，其中X为可观测的随机变量；F为不可观测的，是我们希望求得的因子向量；A为因子载荷矩阵，A中元素a_ij 可以理解为第i个变量与第j个因子的相关系数；可以理解ℇ为白噪声。这里要求</p>
+
+<ul>
+  <li>F的维数要小等于于X的维数</li>
+  <li>E(X) = 0(只需对X做标准化),且∑(X的协方差阵)与R(X的相关矩阵相等)</li>
+  <li>Cov(F) = I，Var(F) = I，即F的各个分量之间是相互独立的</li>
+  <li>E(ℇ) = 0,ℇ的协方差阵是对角阵，即ℇ的各个分量之间是相互独立的</li>
+  <li>Cov(F,ℇ) = 0，即F与ℇ不相关。</li>
+</ul>
+
+<p>在R中，我们可以使用factanal函数进行因子分析，也可以使用psych包中的fa函数进行分析，</p>
+
+<pre><code>library(psych)
+fa.parallel(iris[,1:4],fa="both"，rotate=“none”) ##先判断需要提取的因子个数，这里使fa=both，是使得主成分和因子都显示出来
+vf &lt;- fa(iris[,1:4],nfactors = 2,rotate="varimax")
+pf &lt;- fa(iris[,1:4],nfactors = 2,rotate="promax")
+factor.plot(vf)
+factor.plot(pf)
+fa.diagram(vf)
+fa.diagram(pf)
+</code></pre>
+
+<p>结果中的一些指标和上面主成分分析的差不多。</p>
+
+<p>在主成分分析和因子分析中,都有rotate参数，这个参数指定了对主成分或者因子按照一定的方法进行旋转，使得主成分载荷矩阵或者因子载荷矩阵中的元素向着0或者1的两个方向分化，这样可以使得主成分或者因子在实际情况下有更加明确的物理解释。在旋转技术中又正交旋转和斜交旋转，其区别在于正交旋转其重点在因子结构矩阵(A，因子载荷阵),而斜交旋转则需要考虑因子结构阵(A)，因子模式矩阵(Standarized loadings(pattern matrix) based upon correlation matrix)，因子关联矩阵(With factor correlations of). 其中因子结构阵 = 因子模式阵 * 因子关联阵</p>
+
+<p>因子分析的步骤(多元统计分析及R语言建模，王斌会)</p>
+
+<ol>
+  <li>确认待分析的原变量是否适合因子分析</li>
+  <li>构造因子变量</li>
+  <li>利用旋转方法使得因子变量更具有可解释性</li>
+  <li>计算因子变量得分</li>
+</ol>
+
+<p>因子分析的计算过程(多元统计分析及R语言建模，王斌会)</p>
+
+<ol>
+  <li>讲原始数据标准化，以消除变量在数量级和量纲上的不同</li>
+  <li>求标准化数据的相关矩阵</li>
+  <li>求相关矩阵的特征值和特征向量</li>
+  <li>计算方差贡献率和立即方差贡献率</li>
+  <li>确定因子</li>
+  <li>因子旋转</li>
+  <li>因子解释</li>
+  <li>用原指标的线性组合求得因子得分，采用回归估计，Bartlett估计法</li>
+  <li>计算因子综合得分</li>
+  <li>利用综合得分来排序</li>
+</ol>
+
+<h2 id="canonical-correlation-analysis">5 典型相关分析（Canonical Correlation Analysis）</h2>
+
+<p>多元线性回归中，是一组解释变量和一个反应变量之间的关系，而典型相关分析是一组解释变量与一组反应变量之间的关系。典型相关的具体实施方法是，在两组变量中各找一个代表，即各自变量的线性组合，使得这一对代表比其他对的代表更加相关，然后在两组变量与这一对代表正交的空间中再找另一对最相关的代表，如此下去，找到找不出符合条件的代表(复杂数据统计方法–基于R的应用，吴喜之).</p>
+
+<p>在R中自带的实现典型相关分析的函数是cancor,使用如下</p>
+
+<pre><code>co &lt;- cancor(iris[,1:2],iris[,3:4])
+co$cor #典型相关系数
+co$xcoef # 对应X的系数
+co$ycoef # 对应Y的系数
+co$xcenter #X的中心，即样本均值
+co$ycenter #Y的中心，即样本均值
+</code></pre>
+
+<p>我们也可以使用CCA包中提供的做典型相关分析的函数</p>
+
+<pre><code>library(CCA)
+data(nutrimouse)
+X &lt;- as.matrix(nutrimouse$gene[,1:10])
+Y &lt;- as.matrix(nutrimouse$lipid)
+res.cc &lt;- cc(X,Y)
+plot(res.cc$cor,type="b")
+plot.cc(res.cc)
+</code></pre>
+
+<!--
+
+####6 对应分析(Correspondence Analysis)
+-->
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-06-30">2013-06-30</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#统计" title="统计">统计</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#多元分析" title="多元分析">多元分析</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/06/Analysis-Of-Variance/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/07/Eclipse-Kepler-With-Stardust/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

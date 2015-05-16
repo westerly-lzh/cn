@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>指数平滑 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>指数平滑</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>下面的讨论中，用$\lbrace x_t\rbrace$表示原始的观察数据，用$ \lbrace s_t \rbrace $表示平滑后的数据。</p>
+
+<h2 id="section">移动平均法</h2>
+
+<p>移动平均(moving average)可以看做是最近k个观察值的均值。</p>
+
+<script type="math/tex; mode=display">s_t = \frac{1}{k} \sum_{n=0}^{k-1} x_{t-n} = \frac{x_{t} + x_{t-1}+…+x_{t-k+1} }{k} = s_{t-1} + \frac{x_{t}-x_{t-k}}{k}</script>
+
+<p>较小的k值，产生的平滑效果不明显，使得最近的数据变化明显的反应到 $s_t$中。而交大的k值，会产生明显的平滑效果，并且在数据序列中有显著地延迟效果。移动平均的缺点是在不借助其他方法的前提下，不能用于数据序列中最开始的前k-1项数据。</p>
+
+<h2 id="section-1">权重移动平均法</h2>
+
+<p>假设有一个k项的权重序列$\lbrace w_1, w_2, … w_k \rbrace$，满足$\sum_{n=1}^{k} w_n = 1$,那么把该序列应用到数据序列中，可以得到:</p>
+
+<script type="math/tex; mode=display">s_t = \sum_{n=1}^{k} w_nx_{t+1-n} = w_1x_t + w_2x_2 + … + w_kx_{t-k+1}</script>
+
+<p>在应用权重移动平均方法时，往往会把较大的权重赋值给最近的数据项，这样就可以使得最近的数据项可以较大的反应数据的变化状况。权重移动平均法并没有解决移动平均法所具有的缺点，而且计算过程更加复杂。</p>
+
+<h2 id="section-2">一次指数平滑法</h2>
+
+<p>简单的一次指数平滑(exponential smoothing)法具有如下的形式</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+ \begin{aligned} 
+s_t & = \alpha * x_{t} +(1-a)* s_{t-1} \\\\
+	& =\alpha x_t + \alpha(1-\alpha) x_{t-1} +(1-\alpha)^2 s_{t-2} \\\\
+	& =\alpha [x_t + (1-\alpha) x_{t-1} +(1-\alpha)^2 x_{t-2} + …] +(1-\alpha)^t s_0 
+	\end{aligned}
+ %]]></script>
+
+<p>其中$\alpha$为平滑因子，$0 &lt; \alpha &lt;1 $,较大的$\alpha$ 降低平滑效果，使得平滑后的数据具有较近数据更多地性质，而较小的平滑因子，会增大平滑效果，使得平滑后的数据具有较少的最近数据的特征。可以使用最小二乘法来优化 $\alpha $.指数平滑法的命名也是由$(1-\alpha)^n而来，并且由于 0 &lt;(1-\alpha) &lt; 1$,则当n越大时，表明越久远的数据对第t期的数据影响越小。</p>
+
+<script type="math/tex; mode=display"> \min\sum (s_t - x_t)</script>
+
+<p>一次指数平滑预测公式为$x_{i+h}=s_i$,即预测未来的h期的数据为一条直线，不能反应具有趋势和季节性的数据序列。</p>
+
+<p>指数平滑和移动平均的区别在于指数平滑会考虑所有的已有数据，而滑动平均只会考虑k个已有数据。从技术实现上来说，滑动平均需要维护已有的k个数据点，而指数平滑只需要维护最近预测过的一个数据点。</p>
+
+<p>当样本数据量大于42个时，$s_0$可以取第一期的观察值，而当样本数据量小于42时，$s_0$可以取前几期的平均值。并且在使用一次指数平滑法进行预测时，是由滞后作用的。</p>
+
+<h2 id="section-3">二次指数平滑法</h2>
+
+<p>一次指数平滑不能较好地应用于具有趋势的数据序列上，但二次指数平滑可以较好地应用于具有趋势的数据上。</p>
+
+<h3 id="section-4">方法1</h3>
+
+<p>定义$\lbrace b_t \rbrace$ 表示数据的趋势序列，则二次指数平滑法可以表示如下</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+ \begin{aligned}
+s_1 & = x_1 \\\\
+b_1 & = x_1 - x_0 \\\\
+s_t & = \alpha x_t + (1-\alpha)(s_{t-1} +b_{t-1}) \\\\
+b_t & = \beta (s_t - s_{t-1}) + (1-\beta)b_{t-1}
+\end{aligned}
+ %]]></script>
+
+<p>其中$\alpha$为数据平滑因子，$0 &lt; \alpha &lt;1 , \beta$为趋势平滑因子，且$0 &lt; \beta &lt;1 $.则为了预测$x_t$之后的数据，可以通过</p>
+
+<script type="math/tex; mode=display">
+F_{t+m} = s_t + m b_t
+</script>
+
+<p>其中$m&gt;0，t+m$,为需要预测的项。$F_0$是未定义的，对于第0期，是没有预测值的。$b_0$的选择很重要，一个替代的方案是使用$b_0 = \frac{x_n - x_0}{n},n &gt; 0$</p>
+
+<h3 id="section-5">方法2</h3>
+
+<p>此方法又称为布朗线性指数平滑(Brown’s linear exponential smoothing (<em>LES</em>))定义如下：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+s_0^\prime & = x_0 \\\\
+s_0^{\prime\prime} & = x_0 \\\\
+s_t^\prime & = \alpha x_t + (1-\alpha)s_{t-1}^\prime \\\\
+s_t^{\prime\prime} & = \alpha s_t^\prime + (1-\alpha) s_{t-1}^{\prime\prime} \\\\
+F_{t+m} & = a_t = mb_t
+\end{aligned}
+ %]]></script>
+
+<p>其中$a_t$为在t时刻的预测水平，$b_t$为在t时刻的预测趋势，定义如下:</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+a_t & = 2s_t^\prime - s_t^{\prime\prime} \\\\
+b_t & = \frac{\alpha}{1-\alpha} (s_t^\prime - s_t^{\prime\prime})
+\end{aligned}
+ %]]></script>
+
+<h2 id="section-6">三次指数平滑法</h2>
+
+<p>三次指数平滑法同时考虑到了趋势和季节性变化，又称为Holt Winters指数平滑法.定义$\lbrace b_t \rbrace$ 表示数据的趋势序列，令$\lbrace c_t \rbrace $表示季节修正因子序列。$c_t$表示在时期$ t mode L $中的周期中的趋势比例。其中L表示季节周期长度。则所需的数据量t需要满足$t &gt; L $.三次指数平滑的计算方式可以由下面的公式给出：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+s_0 & = x_0 \\\\
+s_t & = \alpha \frac{x_t}{c_{t-L}} + (1-\alpha)(s_{t-1} + b_{t-1})\\\\
+b_t & = \beta(s_t - s_{t-1}) + (1- \beta)b_{t-1}\\\\
+c_t & = \gamma \frac{x_t}{s_t} + (1-\gamma)c_{t-L}\\\\
+F_{t+m} & = (s_t + mb_t)c_{t-L + (m mod L)} \\\\
+\end{aligned}
+ %]]></script>
+
+<p>设定季节指数$c_i$比较困难，如果N具有完整地季节周期长度，那么</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+c_i & = \frac{1}{N} \sum_{j=1}^{N} \frac{x_{L(j-1)+i}}{A_j}\\\\
+A_j & = \frac{\sum_{i=1}^{L} x_{L(j-1) + i}}{L}
+\end{aligned}
+ %]]></script>
+
+<p>其中$L(j-1)表示第j-1个周期中的数据下标$,则$A_j$表示在第在数据序列中第j个周期中的数据的平均值。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-05-07">2014-05-07</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#统计" title="统计">统计</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#预测" title="预测">预测</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/05/Regress-Analysis/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/05/Using-Data-Table/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

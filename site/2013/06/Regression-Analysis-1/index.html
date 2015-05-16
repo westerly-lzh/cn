@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>简单回归分析 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>简单回归分析</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>对于R做统计分析，由于自己不是科班出身，所以学的有些乱，这里就做一些总结。这里主要介绍下在R中如何使用OLS(最小二乘法)回归法。该部分内容出自R in Action。</p>
+
+<p>使用OLS回归法，数据必须满足以下假设：</p>
+
+<ul>
+  <li>正态性，对于固定的自变量，因变量值成正太分布。</li>
+  <li>独立性，因变量值之间相互独立</li>
+  <li>线性，自变量和因变量之间线性独立</li>
+  <li>同方差性，因变量的方差不随自变量的水平改变而改变。</li>
+</ul>
+
+<h2 id="section">构建拟合模型</h2>
+<p>在R中，用于拟合线性模型最基本的函数是lm，具体用法如下</p>
+
+<p><code>myfit &lt;- lm(formula,data)</code></p>
+
+<p>formula指定了需要拟合的模型，在R中常用的模型记号如下：</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>符号</td>
+      <td>用途</td>
+    </tr>
+    <tr>
+      <td>—-</td>
+      <td>—-</td>
+    </tr>
+    <tr>
+      <td>~</td>
+      <td>分隔符，左边为因变量，右边为自变量，如：y~x</td>
+    </tr>
+    <tr>
+      <td>+</td>
+      <td>分割预测变量，如：y~x+z</td>
+    </tr>
+    <tr>
+      <td>：</td>
+      <td>表示自变量之间的交互项，如： y~x+z+x:z</td>
+    </tr>
+    <tr>
+      <td>*</td>
+      <td>表示自变量之间所有的交互项，如： y~x*z*w 等同于 y~x+z+w+x:z+x:w+z:w</td>
+    </tr>
+    <tr>
+      <td>^</td>
+      <td>表示交互项达到某个次数，如 y~(x+z+w)^2 等同于 y~x+z+w+x:Z+x:w+z:w</td>
+    </tr>
+    <tr>
+      <td>.</td>
+      <td>表示data中除了因变量之外的所有变量</td>
+    </tr>
+    <tr>
+      <td>-</td>
+      <td>表示从模型中移除某一项，如y~(x+z+w)^2-x:z 等同于y~x+z+w+x:w+z:w</td>
+    </tr>
+    <tr>
+      <td>-1</td>
+      <td>删除截距项，强制拟合模型通过原点。</td>
+    </tr>
+    <tr>
+      <td>I()</td>
+      <td>从算数的角度解释括号中的元素,如 y~x+I((z+w)^2 ) 等同于y~x+h,其中h为z和w的平方项</td>
+    </tr>
+    <tr>
+      <td>function</td>
+      <td>拟合模型中可以包含函数,如 log(y) ~ x+z</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>在做回归分析时，尤其是简单线性回归时，首先使用点图把数据可视化，有助于我们理解数据中存在的线性关系。</li>
+  <li>在通过lm获得拟合模型后，我们可以通过summary来简单查看拟合效果，要关注p-value和R-squared这两个指标，其中较小得p-value，说明该拟合模型的可信度比较高，而较大的R-squared则说明随机误差项在对方差的影响比较小。</li>
+  <li>可以使用abline或者lines等函数，给出拟合曲线。观察拟合曲线是够能够很好的解释实际观测点数据，找出异常点；如果不能，则需要修改拟合模型。</li>
+  <li>使用R中其他方法查看拟合模型信息：
+    <ul>
+      <li>coefficients()，列出拟合模型的参数，截距和自变量系数</li>
+      <li>confint(),提供模型参数的置信区间</li>
+      <li>fitted()，列出拟合模型的预测值 </li>
+      <li>residuals(),列出拟合模型的残差值</li>
+      <li>anova()，生成拟合模型的方差分析表</li>
+      <li>vcov(),列出模型参数的协方差阵</li>
+      <li>AIC(),提供拟合模型的赤池准则</li>
+      <li>predict(),对给定自变量，生成拟合模型的预测值</li>
+      <li>effect(),effects包中的函数，可以提供拟合模型中某一项对整个模型的影响</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="section-1">验证模型适用的统计假设(回归诊断)</h2>
+<p>###使用标准包中的分析工具
+拟合的模型在多大程度上满足OSL回归模型的统计假设需要验证，需要验证的内容即为，正态性，独立性，线性及同方差性。可以采用plot方法来提供拟合模型的模型评价图，plot生成的四幅图为：</p>
+
+<ul>
+  <li>残差 VS 拟合值图</li>
+  <li>QQ正态图</li>
+  <li>尺度位置图</li>
+  <li>残差 VS 杠杆图</li>
+</ul>
+
+<p>残差拟合值图中，数据点应当比较均匀的分布在y=0这条横线上下两侧，并无明显趋势，则可以说明，拟合模型符合线性关系。</p>
+
+<p>在QQ正态图中，如果数据点落在成45°的直线上，可以认为拟合模型符合正态性，因变量成正态性(当自变量固定时)，则标准化残差亦呈均值为0的正态分布</p>
+
+<p>在尺度位置图中，拟合值对应的标准化残差的平方根应当随机的分布,且标准化残差的平方根应当以95%的概率小于2.</p>
+
+<p>残差杠杆图中，(暂时未搞明白，主要是杠杆量代表什么，图中实线和虚线又各代表什么)</p>
+
+<p>在上述四图中，应当注意残差拟合值图中数据点的趋势状况，QQ正态图中的偏离直线较远的离群点，在尺度位置图中，关注标准化残差平方根大于2的数据点，残差杠杆图中也要关注离群点。</p>
+
+<h3 id="car">使用car包中的增强工具</h3>
+<p>car包全称为Companion to Applied Regression.car包中提供了大量的增强版的拟合和评价回归模型的函数。</p>
+
+<ul>
+  <li>正态性验证：
+    <ul>
+      <li>qqPlot()，相比较上面的QQ正态图，增加了置信区间,且可以交互。</li>
+    </ul>
+  </li>
+  <li>独立性验证，可以通过检查误差的独立性来确定
+    <ul>
+      <li>
+        <p>durbinWatsonTest(),判断因变量之间是否相互独立。</p>
+
+        <p><strong>durbin-watson检验</strong>，以下内容来自<a href="http://bbs.pinggu.org/thread-490487-1-1.html">人大经济论坛</a>
+  &gt;
+  &gt;DW是0&lt;D&lt;4,统计学意义如下：
+  &gt;
+  &gt;①当残差与自变量互为独立时，D=2 或 DW 越接近2，判断无自相关性把握越大。
+  &gt;
+  &gt;②当相邻两点的残差为正相关时，D&lt;2，DW 越接近于0，正自相关性越强。
+  &gt;
+  &gt;③当相邻两点的残差为负相关时，D&gt;2，DW 越接近于4，负自相关性越强。
+  &gt;
+  &gt;判断。根据样本容量n 和解释变量的数目p 查DW 分布表，得下临界值LD 和上临界值UD ，
+  &gt;并依下列准则判断扰动项的自相关情形。
+  &gt;
+  &gt;(1)如果0&lt;DW&lt; LD ，则拒绝零假设，扰动项存在一阶正自相关。DW 越接近于0，正自相关
+  &gt;性越强。
+  &gt;
+  &gt;(2)如果LD &lt;DW&lt; UD ，则无法判断是否有自相关。
+  &gt;
+  &gt;(3)如果UD &lt;DW&lt;4- UD ，则接受零假设，扰动项不存在一阶正自相关。DW 越接近2，判断
+  &gt;无自相关性把握越大。
+  &gt;
+  &gt;(4)如果4- UD &lt;DW&lt;4- LD ，则无法判断是否有自相关。
+  &gt;
+  &gt;(5) 如果4- LD &lt;DW&lt;4，则拒绝零假设，扰动项存在一阶负自相关。DW 越接近于4，负自
+  &gt;相关性越强。</p>
+      </li>
+    </ul>
+  </li>
+  <li>线性验证，可以通过成分残差图(component plus residual plot)来检验
+    <ul>
+      <li>crPlots()，首先，在个人电脑的R中没有绘制出，不知道什么原因；其次，图所表示的意义仍有些不明白</li>
+    </ul>
+  </li>
+  <li>同方差性验证，
+    <ul>
+      <li>ncvTest()，零假设为误差方差不变，若检验显著(p&lt;0.05)，则说明存在异方差。</li>
+      <li>spreadLevelPlot()，未明白原理</li>
+    </ul>
+  </li>
+</ul>
+
+<p>综合性检验，在gvlma包中，gvlma函数，可以对拟合的线性模型做综合性检验。</p>
+
+<h2 id="section-2">异常处理</h2>
+
+<ul>
+  <li>离群点，离群点具有很大的或正或负的残差(观测值-预测值)，可以通过QQ正态图来确定离群点，也可以通过car中的outlierTest函数来确定。</li>
+  <li>高杠杆值点，</li>
+  <li>强影响点，</li>
+</ul>
+
+<h2 id="section-3">模型改进</h2>
+<ul>
+  <li>删除观测值，离群点对拟合模型有较强的干扰性，可以考虑删除或者特别考虑离群点的现象。</li>
+  <li>变量变换，在car包中，有powerTransform来对非正态化数据做正态化转换。</li>
+  <li>增删变量，当变量出现共线性问题时，删除变量是一种好的解决方式</li>
+  <li>其他方法。。。</li>
+</ul>
+
+<h2 id="section-4">选择恰当的模型</h2>
+<ol>
+  <li>
+    <p>在R中可以通过anova函数来比较两个嵌套的模型，这里嵌套的意思是指其中一个模型包含了另一个模型的所有项。当我们通过lm得到回归模型后可以使用anova进行比较：</p>
+
+    <p><code>fit1 &lt;- lm(y~x)</code></p>
+
+    <p><code>fit2 &lt;- lm(y~x+z)</code></p>
+
+    <p><code>anova(fit1,fit2)</code></p>
+
+    <p>当然，也可以使用AIC函数(Akaike Information Criterion赤池准则)进行比较，但这里AIC就没有anova中模型嵌套的要求了。</p>
+  </li>
+  <li>在模型比较之前，我们需要为模型选定恰当的变量，变量选择的恰当，模型就有更高的精度。现在比较流行的选定变量的方法是逐步回归法和全子集回归法。
+    <ul>
+      <li>逐步回归法，R基础包中step函数，是基于AIC准则进行的，在MASS包中stepAIC方法，比step方法更加全面，</li>
+      <li>
+        <p>全子集回归法，全子集回归会针对所有可能的模型进行检验，可以通过leaps包中的regsubsets函数进行，可以为该函数指定确定的变量个数。</p>
+
+        <p><code>leaps &lt;- regsubsets(y~x+z+w+v,nbest=4)</code></p>
+
+        <p><code>plot(leaps,scale='adjr2') ## 这里使用了调整R^2，参考plot.regsubsets文档</code> </p>
+
+        <p>需要注意的是R^2 和调整R^2 的区别。</p>
+      </li>
+    </ul>
+
+    <p>如果可能变量比较多，那么全子集回归法速度会比较慢一些，但结果在多数情况下要优于逐步回归法。</p>
+  </li>
+  <li>当我们确定了模型后，那么模型中的哪个或者哪些变量相对比较重要一些呢？最简单的方法就是比较标准化预测变量的回归系数，标准化后的预测系数的系数越大，其在模型中对相应变量的影响越大。可以使用scale函数把预测变量的值标准化为均值为0，标准差为1的数据。当然，我们也可以使用预测变量对R^2的贡献来比较各个变量的重要性。</li>
+</ol>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-06-18">2013-06-18</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#统计" title="统计">统计</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#回归分析" title="回归分析">回归分析</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/06/Others-Graduating-Time/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/06/Analysis-Of-Variance/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

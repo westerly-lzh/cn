@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>FreeBSD--内核定制，以IPFilter防火墙为例 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>FreeBSD--内核定制，以IPFilter防火墙为例</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>本文中所使用的FreeBSD版本为FreeBSD 10.0-RELEASE</p>
+
+<p>本文以简单介绍FreeBSD中的防火墙IPFIlter为起因，完成FreeBSD内核的定制化方法及其遇到的一些问题。</p>
+
+<p>首先需要先了解下当前的系统状况</p>
+
+<p><img src="/media/img/bsd-imgs/bsd007.png" alt="FreeBSD 内核版本及构建时间" title="FreeBSD 内核版本及构建时间" /></p>
+
+<p>下面需要为定制内核做准备。</p>
+
+<p><img src="/media/img/bsd-imgs/bsd008.png" alt="FreeBSD 内核定制准备" title="FreeBSD 内核定制准备" /></p>
+
+<p>下图说明在使用IPFilter（IPF）防火墙之前，网络是好的。</p>
+
+<p><img src="/media/img/bsd-imgs/bsd009.png" alt="FreeBSD 使用IPF之前的网络" title="FreeBSD 使用IPF之前的网络" /></p>
+
+<p>下面将会编辑/root/kernels/KERNEL_IPF文件，修改该文件中ident为“KERNEL_IPF”，并增加IPF选项：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd010.png" alt="FreeBSD IPF在内核中的选项" title="FreeBSD IPF在内核中的选项" /></p>
+
+<p>下面就可以构建并安装内核了。内核会被安装到/boot/kernel/目录下，/boot/kernel/目录下原来的内核会被移动到/boot/kernel.old/目录下.构建安装内核的命令很简单：</p>
+
+<pre><code>make buildkernel KERNCONF=KERNEL_IPF 
+make installkernel KERNCONF=KERNEL_IPF
+</code></pre>
+
+<p>这样后/boot目录下就会kernel子目录和kernel.old子目录了。</p>
+
+<p>最后重新启动系统，就可以看见现在已经在新内核下了：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd011.png" alt="FreeBSD 新内核及IPF" title="FreeBSD 新内核及IPF" /></p>
+
+<p>下面简单的配置下IPF，使系统可以使用Loopback Interface。创建/etc/ips.rules文件，并添加如下内容：</p>
+
+<pre><code>pass in quick on lo0 all
+pass out quick on lo0 all
+</code></pre>
+
+<p>并在终端输入如下命令：</p>
+
+<pre><code>ipf -Fa -f /etc/ips.rules
+</code></pre>
+
+<p>这样在终端就可以ping通127.0.0.1了。</p>
+
+<p>再回到定制化内核。内核定制需要关注几个文件:</p>
+
+<pre><code>/usr/src/sys/amd64/conf/NOTES
+/usr/src/sys/conf/NOTE
+</code></pre>
+
+<p>这两个文件详细的说明了定制内核时，需要注意的内容。在定制完内核后，从启系统，在下面画面中选择 【3】Escape to loader prompt ：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd012.png" alt="FreeBSD 启动画面" title="FreeBSD 启动画面" /></p>
+
+<p>然后就可以进入loder交互界面，在该界面下，可以选择启动个内核，可以选择如何启动。首先可以使用lsmod命令看一下当前引导的内核是哪一个：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd013.png" alt="FreeBSD loader界面" title="FreeBSD loader界面" /></p>
+
+<p>然后可以使用load命令来加载内核，在最开始时，有把一个内核备份到/root/kernels/kernel_ipf/目录下，而且在/boot/kernel.old/目录下也有一个系统自动备份的内核。所以可以使用其中的任何一个：</p>
+
+<pre><code>###下面的命令使用任何一个都可以：
+load /root/kernels/kernel_ipf/kernel
+load /boot/kernel.old/kernel
+</code></pre>
+
+<p>这样就会把内核加载起来。最后，通过boot命令就可以使用指定加载的内核完成系统启动了。</p>
+
+<p>在了解系统启动过程时，需要关注/boot/defaults/loader.conf这个文件，这里面记录了系统启动的一些参数。如果需要修改参数系统启动参数，可以通过把需要修改的参数添加到/boot/loader.conf这个文件来完成。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-07-15">2014-07-15</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#unix" title="unix">unix</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Kernel" title="Kernel">Kernel</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#IPFilter" title="IPFilter">IPFilter</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/07/FreeBSD-SSHD/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/07/FreeBSD-Jail/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

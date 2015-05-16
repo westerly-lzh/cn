@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>方差分析 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>方差分析</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>方差分析(ANOVA)也是一种特殊的线性模型，在<a href="http://jeff-lee.name/cn/2013/06/Regression-Analysis-1">简单回归分析</a>中，讨论的回归分析关注的重点在于使用拟合好的模型做预测，而在方差分析中，关注的重点则是对在不同的因子水平下，数据的变异情况做分析。</p>
+
+<h2 id="section">方差分析模型拟合</h2>
+<p>在R中我们使用aov函数做模型拟合，aov(formula,data=…),其中formula指定了拟合模型的形式，具体结构如下：</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>符号</td>
+      <td>用途</td>
+    </tr>
+    <tr>
+      <td>—-</td>
+      <td>—-</td>
+    </tr>
+    <tr>
+      <td>~</td>
+      <td>分隔符，左边为响应变量，右边为解释变量</td>
+    </tr>
+    <tr>
+      <td>+</td>
+      <td>分割解释变量</td>
+    </tr>
+    <tr>
+      <td>:</td>
+      <td>表示变量的交互项，如 y~ A+B+A:B,其中A:B表示变量A与变量B的交互项</td>
+    </tr>
+    <tr>
+      <td>*</td>
+      <td>表示所有可能的交互项,y~A*B*C ,等价于y~A+B+C+A:B+A:C+B:C+A:B:C</td>
+    </tr>
+    <tr>
+      <td>^</td>
+      <td>表示某个交互项达到的次数 y~ (A+B+C)^2 等价于y~ A+B+C+A:B+A:C+B:C</td>
+    </tr>
+    <tr>
+      <td>.</td>
+      <td>表示除响应变量之外的所有变量</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在常见的方差分析中，常见的formula有如下一些格式：</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>设计目的</td>
+      <td>表达式</td>
+    </tr>
+    <tr>
+      <td>—-</td>
+      <td>—-</td>
+    </tr>
+    <tr>
+      <td>单因素ANOVA</td>
+      <td>y ~ A</td>
+    </tr>
+    <tr>
+      <td>含单个协变量的单因素ANOVA</td>
+      <td>y ~ x + A</td>
+    </tr>
+    <tr>
+      <td>双因素ANOVA</td>
+      <td>y ~ A * B</td>
+    </tr>
+    <tr>
+      <td>含两个协变量的双因素ANOVA</td>
+      <td>y ~ x_1 + x_2 + A * B</td>
+    </tr>
+    <tr>
+      <td>随机化区组</td>
+      <td>y ~ B + A (B是区组因子)</td>
+    </tr>
+    <tr>
+      <td>单因素组内ANOVA</td>
+      <td>y ~ A + Error(Subject/A)</td>
+    </tr>
+    <tr>
+      <td>含单个组内因子(W)和单个组间因子(B)的重复测量ANOVA</td>
+      <td>y ~ B * W + Error(Subject/W)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>方差分析中，formula右边项的顺序很重要，有三种类型方法可以用来分解右边项各效应对y的解释，</p>
+
+<ul>
+  <li>类型1(序贯型)，R默认采用的</li>
+  <li>类型2(分层型)</li>
+  <li>类型3(边界型)SPSS，SAS默认采用的</li>
+</ul>
+
+<p>可以使用R包car中提供的Anova函数来使用类型2和类型3，关于顺序的问题，还需要深入探索。</p>
+
+<h2 id="section-1">单因素方差分析</h2>
+<p>在单因素方差分析中，我们比较关注的是在单个因素A各个水平的效应有无差异。</p>
+
+<p>原假设，H_0 ：A因素下各个水平的效应无显著差异(各水平下得效应均值相等,p_value&gt;0.05)，H_1 ： A水平下各个水平的效应不全相等(p_value&lt;0.05)。</p>
+
+<p>但在做单因素方差分析之前，我们假定数据满足以下两个条件：</p>
+
+<ul>
+  <li>因变量服从正态分布</li>
+  <li>各组方差相等</li>
+</ul>
+
+<p>我们可以使用car包中的qqPlot来做正态性检验，而方差齐性检验则可以使用bartlett.test函数来验证，其他的可以做方差齐性验证的函数还有fligner.test,HH包中的hov函数；不过方差齐性检验对离群点特别敏感，可以使用上篇<a href="http://jeff-lee.name/cn/2013/06/Regression-Analysis-1">简单回归分析</a>中介绍的car包中的outlierTest函数来先检测离群点，如果发现离群点，可以删除离群点，然后再做方差齐性检验</p>
+
+<p>当我们在方差分析发现需要拒绝H_0 而接受H_1 时，我们应当采用什么方法来找出具体是那些水平的效应与其他水平的效应不同？ 我们可以使用pairwise.t.test函数来对各个效应做多重比较，我们也可以使用TukeyHSD函数来做每一水平间的比较，然后通过plot把TukeyHSD函数返回的结果绘制出来。还可以使用multcomp包中的glht函数(将会在广义线性模型中做介绍)。</p>
+
+<h2 id="section-2">单因素协方差分析</h2>
+
+<p>模型：y ~ x + A</p>
+
+<p>数据所满足的统计假设：</p>
+
+<ul>
+  <li>正态性</li>
+  <li>同方差性</li>
+  <li>回归斜率相同</li>
+</ul>
+
+<p>可以使用HH包中的ancova进行分析，还可以使用multcomp包中的glht函数。同单因素方差分析一样，在做协方差分析之前，需要满足上面的三个统计假设，而正态性和通方差性假设，可以使用和单因素方差分析中一样的检验方法，回归斜率相同的假设。回归斜率相同的假设，意味着协变量和因子变量之间没有交互作用；回归斜率不同，意味着协变量和因子变量之间有交互作用。可以使用HH包中的ancova函数，用法如下 ancova(y ~ x*A),通过p_value来验证交互作用.</p>
+
+<h2 id="section-3">双因素方差分析</h2>
+<p>双因素方差分析中主要考虑交互效应，在R中可以使用interaction.plot函数来展现双因素的交互效应，也可以使用gplots包中的plotmeans来展现交互效应，HH包中也有interaction2wt来可视化交互效应，推荐interaction2wt。在interaction2wt函数中，如果各曲线之间有相互交叉，则有可能交互影响，但需要注意的是，并不是说只要有交叉，就存在交互效应，交互效应可能有，但是不够显著。所以具体的判断还是需要通过aov或者ancova函数来具体查看.</p>
+
+<p>当交互效应较小时，探讨各个因子对因变量的影响是有意义的，但当交互效应比较大时，主效应就掩盖在交互效应之中了，探讨各因子对因变量的影响就没有意义了。</p>
+
+<h2 id="section-4">重复测量方差分析</h2>
+<p>每一个个体作为自身的对照，克服了个体间的变异，分析时可以更好地集中处理效应，但也存在一些问题：其一，滞留效应，前面的处理效应可能滞留到下一次的处理；其二，潜隐效用，前面的处理效应有可能激活原本以前不活跃的效应；学习效应，由于逐步熟悉实验，研究对象的反应能力有可能逐步得到了提高。</p>
+
+<p>重复测量方差分析的统计假设：</p>
+
+<ul>
+  <li>正态性</li>
+  <li>方差齐次性</li>
+  <li>协方差阵具有球形特征</li>
+</ul>
+
+<p>[待续]</p>
+
+<hr />
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-06-21">2013-06-21</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#统计" title="统计">统计</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#方差分析" title="方差分析">方差分析</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/06/Regression-Analysis-1/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/06/Multivariate-Statistical-Analysis/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

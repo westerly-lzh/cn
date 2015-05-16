@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>OS杂记[2] | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>OS杂记[2]</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>现在已经算是全面转到ubuntu上了，当然除了可恨的国内银行还死守着基于IE的网上在线交易，让我唯一无法彻底抛弃windows。</p>
+
+<p>刚开学的这个月里，基本上把实验室的环境搞好了，这里必须赞一下实验室的硬件设施，基本上达到了开发中的顶配。实验室我分配到的PC机上被我用KDE下的Linux代替了原来的Windows7，基本可以完全支撑起我的日常工作了。然后需要台服务器，虽然实验室有个ups支持的服务器机架，上面也有几台服务器，但好像是专用的，所以不敢乱动。后来知道导师在实验室有台还算不错的服务器，不过是个裸机，所以我就先嘿嘿坏笑下，终于可以自己来安装下服务器了。不过IBM的服务器确实和普通的PC安装过程有很大的差别，由于是裸机，所以在前期的Virtual Disk设置上就纠结了半天，后来看到了一个<a href="http://xjsunjie.blog.51cto.com/999372/642583">blog</a>，这里就只贴出地址就不转贴了，不过好东西当然需要pdf另存下了。刚开始我不知道，折腾了半天怎么都无法启动usb启动盘。搞好这个配置后就可已继续安装系统了，ubuntu默认的服务器版本好像是没有GUI的，为了方便些，我在这服务器上也装了个kde，又不是用于生产性的服务器，所以也不必担心额外的GUI会成为系统的负担。系统好了后，就安装上ssh和远程桌面，我选择的KRDC和Remmina，不过尝试KRDC和Remmina后发现这Linux下的远程桌面完全不能和windows下的远程桌面相提并论，卡的让人捉急啊（完全的局域网远程链接），所以还是果断使用ssh吧，ssh远程比较容易些，首先要在服务器上安装ssh服务端并启动：
+&gt; 
+&gt; sudo apt-get install openssh-server
+&gt; sudo sshd</p>
+
+<p>接着就是可以我的个人PC上安装个客户端
+&gt; 
+&gt;sudo apt-get install openssh-client</p>
+
+<p>然后就可已在客户端连接了：
+&gt; 
+&gt; ssh user@ip</p>
+
+<p>把上面的user替换为相应的用户名，ip替换为服务器的ip就可已简单的使用了。这里就不介绍如何使用ssh的公钥如何进行验证登录了。系统整好后就安装个数据库，毕竟这个服务器对我来说的主要用途还是不间断的执行一些定时任务，任务产生的数据就先想着存储到数据库中，我选择的是postgresql，当然mysql也是一个不错的选择，毕竟在服务器版本的ubuntu中预装的就是mysql，但纯粹是个人偏好，我比较喜欢postgresql，而且postgresql支持一些我未来可能会用到的数据类型。postgresql安装好后需要配置两个文件，一个是postgresql.conf，另一个是pg_hba.conf，这两个文件的使用在其文档中有充分的说明，这里就不细写。</p>
+
+<p>刚刚在git中提交这篇blog时，遇到乱码的问题，仔细比较了下这篇文章和其他文章的格式，发现是categories和tags中那个‘Linux’和‘-’之间少了一个空格，无语至极了。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-10-03">2013-10-03</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#os" title="os">os</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Linux" title="Linux">Linux</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/09/School-Begin/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/10/OSX-Miscellaneous/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

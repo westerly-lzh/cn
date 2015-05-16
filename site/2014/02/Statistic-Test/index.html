@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>统计假设检验实验设计类别及其对应检验方法 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>统计假设检验实验设计类别及其对应检验方法</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<h2 id="section">设计类型及其对应检验方法</h2>
+
+<p><img src="/media/img/test.png" alt="alt text" title="统计检验设计" /></p>
+
+<h2 id="section-1">正态性检验</h2>
+
+<ul>
+  <li>Kolmogorov-Smirnov Tests，检验<em>单一</em>样本是不是服从预先假设的特定分布方法.检验方法是以样本数据的累计频数分布与特定理论分布比较，若两者间的差距很小(p-value足够大)，则推论该样本取自某特定分布族。
+    <ul>
+      <li>H_0：样本所来自的总体分布服从某特定分布</li>
+      <li>H_1：样本所来自的总体分布不服从某特定分布</li>
+      <li>
+        <table>
+          <tbody>
+            <tr>
+              <td>令F_0(x)表示预先假设的理论分布，F_n(x)表示随机样本的累计概率(频率)函数，设 D=max</td>
+              <td>F_0(x) - F_n(x)</td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+      <li>结论：当D &gt; D(n, a), 则拒绝H0, 反之则接受H_0假设。其中D(n,a) 是显著水平为a且样本容量为n时的拒绝临界值（查表可得）</li>
+      <li>单样本 K-S 检验可以将一个变量的实际频数分布与高斯分布(Gaussian)、均匀分布(Uniform)、泊松分布(Poisson)、指数分布(Exponential)等进行比较</li>
+      <li>R 语言中对应的方法为ks.test(x, y, …,alternative = c(“two.sided”, “less”, “greater”),exact = NULL),其中x为观测值向量，y要么为观测值向量，要么为代表累积分布函数的字符变量要么为一个真正的累计分布函数。做正态性检验时y可以为pnorm</li>
+    </ul>
+  </li>
+  <li>Shapiro-Wilk Normality Test，Shapiro-Wilk检验用于验证一个随机样本数据是否来自正态分布。在实际使用中，除了Shapiro-Wilk检验的结果，还应配上normal probability plot，提供样本分布形状方面的非量化信息。设 $Y_1&lt; Y_2 &lt; … &lt; Y_n $是数量是n的一个排序的样本，需要验证其是否符合正态分布。
+    <ul>
+      <li>H_0: 样本数据与正态分布没有显著区别。</li>
+      <li>H_1: 样本数据与正态分布存在显著区别。</li>
+      <li>w = $(Σa_i*y_i )^2/Σ(y_i-mean(y))^2$ ,如果样本数据的确来自一个正态分布，统计量W的分子和分母均会趋向一个常数：(n -1)*σ2的估计值。对于非正态分布的数据而言，分子和分母通常不会趋向同一个常数。它的值越高，越表示样本与正态分布匹配</li>
+      <li>适用于样本含量《= 50的情况</li>
+    </ul>
+  </li>
+  <li>其他方法
+    <ul>
+      <li>在nortest包中
+        <ul>
+          <li>lillie.test()可以实行更精确的Kolmogorov-Smirnov检验。
+  	* ad.test()进行Anderson-Darling正态性检验。
+  	* cvm.test()进行Cramer-von Mises正态性检验。
+  	* pearson.test()进行Pearson卡方正态性检验。
+  	* sf.test()进行Shapiro-Francia正态性检验。适用于50&lt;n&lt;100的情况</li>
+        </ul>
+      </li>
+      <li>在fBasics包中
+  	* normalTest()进行Kolmogorov-Smirnov正态性检验。
+  	* ksnormTest()进行Kolmogorov-Smirnov正态性检验。
+  	* shapiroTest()进行Shapiro-Wilk’s正态检验。
+  	* jarqueberaTest()进行jarque-Bera正态性检验。
+  	* dagoTest进行D’Agostino正态性检验。
+  	* gofnorm采用13种方法进行检验，并输出结果。</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="section-2">方差齐次性检验</h2>
+<ul>
+  <li>Bartlett’s Test，在样本为正态性的假设条件下，使用该检验方法。基于此原因，统计学家建议使用下面介绍的 <em>Levene’s Test</em> 和<em>Brown-Forsythe Test</em>
+    <ul>
+      <li>R中作Bartlett检验的方法为bartlett.test(x,…)</li>
+    </ul>
+  </li>
+  <li>Levene’s Test，Levene检验主要用于检验两个或两个以上样本间的方差是否齐性。要求样本为随机样本且相互独立。常见的Bartlett多样本方差齐性检验主要用于正态分布的资料,对于非正态分布的数据,检验效果不理想。Levene检验既可以用于正态分布的资料,也可以用于非正态分布的资料或分布不明的资料,其检验效果比较理想。
+    <ul>
+      <li>R语言中car包有leveneTest(y, …)方法进行该检验,lawstat包中有levene.test()方法</li>
+    </ul>
+  </li>
+  <li>Brown-Forsythe Test</li>
+</ul>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-02-20">2014-02-20</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#统计" title="统计">统计</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#实验设计" title="实验设计">实验设计</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#检验方法" title="检验方法">检验方法</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/01/Multinomial-Distribution/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/03/Clustering-Review/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>
