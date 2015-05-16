@@ -60,6 +60,8 @@ $$\sum_{i=0}^n\sum_{j=1}^n X_{ijk}(\frac{d_{ij}}{V}+t_{cj}) \le T_{max} \quad k=
 
 ## Java 实现
 
+本实现基于 http://www.cnblogs.com/biaoyu/archive/2012/09/26/2704456.html中的代码，根据《一种动态循环取货的入场物流策略及其线路规划研究》中对蚁群算法的扩展而实现。
+
 Ant.java
 
 	import java.util.Random;
