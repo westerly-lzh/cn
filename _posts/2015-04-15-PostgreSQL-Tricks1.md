@@ -9,6 +9,7 @@ tags:
 ---
 
 本系列为在使用PostgreSQL数据库期间学习到的一些小技巧。本文讨论PostgreSQL中的连接。
+
 ## 交叉连接
 
 	T1 CROSS JOIN T2
