@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  PostgreSQL-- 技巧1
+title:  PostgreSQL-- 技巧2
 categories:
 - database
 tags:
