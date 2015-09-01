@@ -19,7 +19,7 @@ comments: yes
 
 ## 三、论文相关
 1.	LDA--LDA_Notes [PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/lda_notes.pdf?raw=true)
-2.	
+2.	A framework for extracting and representing project knowledge contexts using topic models and dynamic knowledge maps [PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/A_framework_for_extracting_and_representing_project_knowledge_contexts_using_topic_models_and_dynamic_knowledge_maps.pdf?raw=true)
 
 
 
