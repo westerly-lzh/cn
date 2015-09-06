@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>MAC杂记[1] | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>MAC杂记[1]</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>昨天把Air的系统从10.8升级到了10.9，体验了一把Mavericks的高端，但随之而来的是JDK的不能使用。原本在10.8时候从Oracle上下载下来的JDK1.7安装后需要做一个文件的链接，Eclipse才能正常运转（提示需要JDK1.6），就是把安装在Library下得JDK链接到System下JavaVirtualMachines中去（注意在MAC中还有一个地方史有JDK链接的，位置在System下得Frameworks.app下）。写到这里就要感叹一句苹果下好混乱的JDK安装位置。升级到Mavericks后，启动Eclipse提示说是无法打开Eclipse，需要安装JDK1.6，顿时我就想到了第一次安装JDK的情景，我立马做了一次链接，但是还是不行，然后网上各种搜索，各种解决方式，有的说需要把Library下Java中的Info.plist修改的，在JVMCapabilities的key下增加一些对Apple的选项支持，有的说再次做链接，到System下得Frameworks.app下，还有的说在Eclipse的安装目录下得eclipse.ini中增加-vm选项，然后把系统中javaws的路径写上（比较奇怪的是在windows下这个javaws貌似叫做javaw.exe，名字居然不同）,但是在jdk的bin路径下居然没有找到这个javaws，然后我比较了一下System下Frameworks.app下JAVA的javaws（具体在/System/Library/Frameworks/JavaVM.framework/Versions/A/Commands目录下）,结果版本一致，于是就把Command目录下得所有文件copy到了/Library/Java/JavaVirtualMachines/jdk1.7.0_21.jdk/Contents/Home/bin目录下。结果仍然是不能执行，还有个The JVM shared library “/System/Library/Frameworks/JavaVM.framework” does not contain the JNI_CreateJavaVM symbol.这样的问题出现。各种纠结蛋碎的心都有了，果断安装个新的jdk吧，于是官网下了个jdk1.7.45的版本，然后安装，结果提示安装失败。。。。然后，就只有删掉新安装的jdk，然后再恢复之前所有的修改，果然错误又回到了提示无法打开eclipse，需要安装jdk1.6的问题上了。。。然后我也把JAVA_HOME添加到了PATH上，但是仍然问题继续。</p>
+
+<p>后面想想eclipse启动，肯定有个地方指定所使用的jdk版本，不然就在PATH下面搜索，虽然我之前更改了PATH是无效的，但是肯定有个地方可以指定jdk的版本，既然在eclipse.ini中通过-vm无法指定，但是在cd /Applications/eclipse/Eclipse.app/Contents目录下还有一个Info.plist,打开一看，果然有个地方来设置-vm及其参数，果断修改，熟悉的eclipse果断出现。。。。</p>
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-10-03">2013-10-03</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#os" title="os">os</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Mac" title="Mac">Mac</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/10/Linux-Miscellaneous/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/10/PostgreSQL-Miscellaneous/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

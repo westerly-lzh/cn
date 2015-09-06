@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>OS杂记[4] | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>OS杂记[4]</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>今天，我的linux被非常多的at job给阻塞了，具体原因还要从前几天说起。</p>
+
+<p>之前一段时间一直在做一个从Yahoo上自动爬数据的任务，使用的是Oauth框架，但是每运行一段时间后得到的数据就不是我想要的了，然后爬虫程序就抛出异常。然后我想就捕获异常，然后再继续（只需要一个循环就OK了），但是问题并没有得到解决，后来，我判断是我的爬虫程序运行一段时间后Oauth的token过期了，于是我就在上面提到的抛出异常的地方换token，然后，然后就证明我的猜测是错误的。于是就继续让他抛出异常吧，然后我重新启动程序，就又可以继续爬数据了，于是我就想到了使用linux下的at命令（在这个场景下使用cron是不适合的），只不过该命令不是在控制台输入而是通过python调用。既然有了想法，就说干就干。</p>
+
+<p>首先我要先写一个测试的代码来验证我的想法，当然这个验证的想法是很明智的，但是悲催的事情就出现了。我验证的场景是这样的，我有一个循环，然后在循环进行到了某一次时候就抛出异常（当然我预想的是在循环进入到这个抛出异常之前，我的业务逻辑需要花费3秒钟来处理，这样程序就不会运行的太快，以至于瞬间产生很多at，这里不需要怀疑，确实会产生很多），然后我捕获异常，并在捕获异常的处理模块中调用at命令，让at在从当前时刻后的第1分钟执行一个脚本，而这个脚本就是我这个用python写的这个验证程序。于是这就可以解决我在上面描述的场景中必须通过重新启动这个程序才能再次爬数据的目的了。想法是很不错的，验证程序的也写出来的，但是我犯了一个错误，把调用at的命令写在了finally中，这样在每次循环中的异常捕获中，不论有无异常都会执行一次，也就是我的每次for循环都会执行一次at。这样的后果是我由at产生的job数量是指数级增加的。代码如下：</p>
+
+<pre><code>#This file is:
+#Test.py
+import time;
+import os;
+for i in (1,2,3,4,5):
+	try:
+    	##Do something but something it will raise errors;
+    	if i==5:
+        	'''
+        	In my real application ,this exception may be caused by the bad net status
+        	'''
+        	raise IOError();
+    	time.sleep(3);
+	except Exception,e:
+    	print "error"
+	finally:
+    	print "Hello"
+#         os.system("at -f test.sh now + 1 minute")
+
+#content of test.sh:
+#python /home/jeff/Eworkspace/projectM/pm/Test.py
+</code></pre>
+
+<p>于是当几分钟过去后，我的电脑完全处于卡死的状态（即使是i7八核，也扛不住这么多的任务轮询啊）。于是我天真的以为可以重启，这样这些任务一过期就会自动丢失，可是事情却不是我想的那样，于是等我折腾了不多久，系统中的任务数达到了38000多个而实际的任务id达到了48000左右，而同时在执行的任务数达到了4700多个。所以所有的cpu资源完全被这些任务占据了，我只好硬件关机（软关机，控制台完全没有响应）</p>
+
+<p>后面就只有先关机，然后想办法可以在不运行这些job的前提下进入系统，然后把这些job全部atrm掉。刚开始想的是进入恢复模式，可是发现恢复模式对文件的所有操作都是只读的，所以没法修改上面的test.sh或者Test.py这两个文件。于是后面想着进入单用户模式下，这下成功了，然后确定单用户模式下可以读写文件并且那些已经存在的job还都不处于运行模式下（当然这这里这次额任务不运行可能是因为我在进入单用户模式下把硬件时间提前了一年，这样这些任务就算执行也需要等到一年以后，但即使这些任务不运行，可是也会不断的轮询cpu来判断是不是该执行了，所以我最后得出的结论是在单用户模式下，这些由启发用户产生的job就不会运行，即使他们仍然存在）。只要这些job不运行，系统不卡，下面的事情就好办了，我就又写了一小段代码用来把这些任务移除掉：</p>
+
+<pre><code>import os;
+os.system("at -l &gt;&gt;at.jobs")
+for line in open("at.jobs","r"):
+    jobid=line.split("\t")[0];
+    print "atrm "+jobid
+    os.system("atrm "+jobid);
+</code></pre>
+
+<p>当然这个操作可以通过shell就完成的，但是对shell的不熟悉，让我只能退而求其次，这样就把我现在的问题解决了。下面果断重启系统进入正常模式看看结果是不是如我预料的那样。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-11-21">2013-11-21</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#os" title="os">os</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Ubuntu" title="Ubuntu">Ubuntu</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#at" title="at">at</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#定时任务" title="定时任务">定时任务</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/11/Reviewing-And-Scheduling-Of-Horrible-Tasks/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/11/The-Twelfth-Week-Of-This-Term/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

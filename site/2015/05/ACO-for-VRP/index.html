@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>循环取货问题的蚁群算法 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>循环取货问题的蚁群算法</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<h2 id="section">引子</h2>
+
+<p>一个朋友在循环取货（Milk-run）问题中需要使用蚁群算法，于是我就特地的找了一篇讨论该问题的论文《一种动态循环取货的入场物流策略及其线路规划研究》，并实现了该文献中讨论的算法。</p>
+
+<h2 id="section-1">数据准备</h2>
+
+<pre><code>Vvv	v00	v01	v02	v03	v04	v05	v06	v07	v08	v09	v010	q	t
+v00	0	28	41	20	41	30	22	50	22	28	31	0	0
+v01	28	0	22	44	60	22	41	60	30	40	58	15	0.6
+v02	41	22	0	50	58	14	60	82	50	36	64	9	0.4
+v03	20	44	50	0	22	36	36	64	41	20	14	12	0.5
+v04	41	60	58	22	0	44	58	86	63	22	22	14	0.6
+v05	30	22	14	36	44	0	50	76	44	22	50	16	0.6
+v06	22	41	60	36	58	50	0	28	14	50	41	8	0.3
+v07	50	60	82	64	86	76	28	0	31	78	67	13	0.5
+v08	22	30	50	41	63	44	14	31	0	50	50	15	0.6
+v09	28	40	36	20	22	22	50	78	50	0	31	7	0.3
+v10	31	58	64	14	22	50	41	67	50	31	0	8	0.3
+</code></pre>
+
+<p>该问题中有十个供应商，分别为v01 ~ v10, v00为配送中心，q为车辆在每个供应商处的载货量（按照体积计算），而t为在该供应商处的集货时间。车辆限制为：车辆最大载货体积为41 $m^3$, 车辆的行驶距离为200km，车速为40，车辆最大行驶时间限制为7小时。</p>
+
+<h2 id="section-2">模型</h2>
+
+<p>假定供应商以$V_i${$i=0,1,2,…,n$}来表示，其中$V_0$代表集货中心，集货中心有$m$辆车，所有车的行驶速度一致，车辆的最大载货量表示为$Q_{max}$，车辆允许的最大行驶时间为$T_{max}$,允许的最大行驶距离为$L_{max}$,车辆的行驶速度为$V$，供应商$V_i$与供应商$V_j$之间的距离用$d_{ij}$,供应商$V_i$到供应商$V_j$需要花费的时间为$\frac{d_{ij}}{V}$,在供应商$V_i$处的集货时间为$t_{ci}$,发送量为$q_i$.</p>
+
+<p>定义：$X_{ijk} =\cases{1&amp;车辆k从供应商V_i行驶到供应商V_j \\0&amp;否则} $,$y_{ik} = \cases{1&amp;供应商V_i由车辆k进行循环取货 \\0&amp;否则}$。则该模型可以表示如下：</p>
+
+<script type="math/tex; mode=display">D = min(\sum_{i=0}^n\sum_{j=0}^n\sum_{k=1}^md_{ij}X_{ijk}) \label{1}</script>
+
+<script type="math/tex; mode=display">\sum_{k=1}^m y_{ik} =1  \quad  i=1,2,...,n \label{2}</script>
+
+<script type="math/tex; mode=display">\sum_{i=0}^n\sum_{k=1}^m X_{ijk} =1  \quad  j=1,2,...,n \label{3}</script>
+
+<script type="math/tex; mode=display">\sum_{j=1}^n\sum_{k=1}^m X_{ijk} =1  \quad  i=1,2,...,n \label{4}</script>
+
+<script type="math/tex; mode=display">\sum_{i=1}^n\sum_{k=1}^m X_{oik} =\sum_{j=1}^n\sum_{k=1}^mX_{jok} \label{5}</script>
+
+<script type="math/tex; mode=display">\sum_{i=1}^ny\_{ik}q_i \le Q_{max} \quad k=1,2,...,m \label{6}</script>
+
+<script type="math/tex; mode=display">\sum_{i=1}^n\sum_{j=1}^nX_{ijk}d_{ij} \le L_{max} \quad k=1,2,...,m \label{7}</script>
+
+<script type="math/tex; mode=display">\sum_{i=0}^n\sum_{j=1}^n X_{ijk}(\frac{d_{ij}}{V}+t_{cj}) \le T_{max} \quad k=1,2,...,m \label{8}</script>
+
+<h2 id="section-3">蚁群算法原理</h2>
+<p>蚂蚁在觅食过程中，在第一次经过一个还没有走过的路径的分叉口时，会随机的挑选其中一条路径前进，并分泌出与路径信息相关的信息素，当后来的蚂蚁再次经过该岔路口时就会通过感知已经经过该路径的蚂蚁遗留下来的信息素，并通过选择信息素浓度较大的路径来完成寻觅工作。这种正向的反馈机制能够有效的引导蚂蚁找到最优路径，因为最优路径上经过的蚂蚁会越来越多，信息量就会越来越大，而由于非最优路径上的信息量会随着时间的流逝而逐渐减少直至消失。</p>
+
+<h2 id="java-">Java 实现</h2>
+
+<p>Ant.java</p>
+
+<pre><code>import java.util.Random;
+import java.util.Vector;
+
+public class Ant implements Cloneable {
+
+	private Vector&lt;Integer&gt; tabu;// 禁忌表
+	private Vector&lt;Integer&gt; allowedCities;// 允许搜索的城市
+	private float[][] delta;// 信息素变化矩阵
+	private float[][] distance;// 距离矩阵
+	
+	private float alpha;//
+	private float beta;//
+	private float lamda;
+	private float omga;
+	
+	private int tourLength;// 路径长度
+	private int cityNum;// 城市数量
+	
+	private int firstCity;// 起始城市
+	private int currentCity;// 当前城市
+	
+	// /Added
+	
+	// private int[] tour;
+	private float[] Q;// 供应商的发送量
+	private float[] T;// 供应商的集货时间
+	private float V; // 车辆速度
+	
+	private float Q\_max;
+	private float L\_max;
+	private float T\_max;
+	
+	private float load\_Q = 0;
+	private float load\_T = 0;
+	private float load\_D = 0;
+	
+	public void resetLoad() {
+		load\_Q = 0.0f;
+		load\_T = 0.0f;
+		load\_D = 0.0f;
+	}
+
+	public boolean selectCityIsOK(int selectCity) {
+		return ((load\_Q + Q[selectCity]) &lt;= Q\_max) &amp;&amp; ((load\_D + distance[tabu.get(tabu.size() - 2)][selectCity]) &lt;= L\_max)
+				&amp;&amp; ((T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V) &lt;= T\_max);
+	}
+	
+	public void updateLoadQ(int selectCity) {
+		load\_Q += load\_Q + Q[selectCity];
+		load\_D += load\_D + distance[tabu.get(tabu.size() - 2)][selectCity];
+		load\_T += load\_T + T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V;
+	}
+	
+	public Ant() {
+		cityNum = 30;
+		tourLength = 0;
+		Q = new float[cityNum];
+		T = new float[cityNum];
+		V = 40;
+	
+		Q\_max = 41;
+		L\_max = 200;
+		T\_max = 7.0f;
+	
+	}
+	
+	public Ant(int cityNum, float[] Q, float[] T, float V, float Q\_max, float L\_max, float T\_max) {
+		this.cityNum = cityNum;
+		tourLength = 0;
+		this.Q = Q;
+		this.T = T;
+		this.V = V;
+	
+		this.Q\_max = Q\_max;
+		this.L\_max = L\_max;
+		this.T\_max = T\_max;
+	}
+	
+	/**
+ 	* 初始化蚂蚁，所有蚂蚁必须从配送中心出发，配送中心为0
+ 	* 
+	* @param distance
+ 	* @param alpha
+ 	* @param beta
+ 	*/
+	public void init(float[][] distance, float alpha, float beta, float lamda, float omga) {
+		this.alpha = alpha;
+		this.beta = beta;
+		this.lamda = lamda;
+		this.omga = omga;
+		allowedCities = new Vector&lt;Integer&gt;();
+		tabu = new Vector&lt;Integer&gt;();
+		this.distance = distance;
+		this.delta = new float[cityNum][cityNum];
+		for (int i = 0; i &lt; cityNum; i++) {
+			allowedCities.add(new Integer(i));
+			for (int j = 0; j &lt; cityNum; j++) {
+				this.delta[i][j] = 0.0f;
+			}
+		}
+		// -------------BEGIN
+		// 蚂蚁随机选择初始化的城市 FIXME，新应用中应当使蚂蚁从配送中心出发
+		// Random random = new Random(System.currentTimeMillis());
+		// firstCity = random.nextInt(cityNum);
+		firstCity = 0;
+		// --------------END
+		for (Integer i : allowedCities) {
+			if (i.intValue() == firstCity) {
+				allowedCities.remove(i);
+				break;
+			}
+		}
+		tabu.add(Integer.valueOf(firstCity));
+		currentCity = firstCity;
+		resetLoad();
+	}
+
+	/**
+	* 选择下一个城市
+ 	* 
+ 	* @param pheromone
+ 	*            信息素
+ 	*/
+	public int selectNextCity(float[][] pheromone) {
+		double[] p = new double[cityNum];
+		double sum = 0.0f;
+		// 计算分母部分
+		for (Integer i : allowedCities) {
+			sum += Math.pow(pheromone[currentCity][i.intValue()], alpha) * Math.pow(1.0 / distance[currentCity][i.intValue()], beta)
+					* Math.pow((load\_Q + Q[i.intValue()]) / Q\_max, lamda)
+					* Math.pow((L\_max / (load\_D + distance[currentCity][i.intValue()] + distance[i.intValue()][0])), omga);
+		}
+		// 计算概率矩阵
+		for (int i = 0; i &lt; cityNum; i++) {
+			boolean flag = false;
+			for (Integer j : allowedCities) {
+				if (i == j.intValue()) {
+					p[i] = (Math.pow(pheromone[currentCity][i], alpha) * Math.pow(1.0 / distance[currentCity][i], beta)
+							* Math.pow((load\_Q + Q[j.intValue()]) / Q\_max, lamda) * Math.pow(
+							(L\_max / (load\_D + distance[currentCity][j.intValue()] + distance[j.intValue()][0])), omga))
+							/ sum;
+					flag = true;
+					break;
+				}
+			}
+			if (!flag) {
+				p[i] = 0.0f;
+			}
+		}
+		// 轮盘赌选择下一个城市
+		Random random = new Random(System.currentTimeMillis());
+		float selectP = random.nextFloat();
+		int selectCity = 0;
+		float sum1 = 0.0f;
+		for (int i = 0; i &lt; cityNum; i++) {
+			sum1 += p[i];
+			if (sum1 &gt; selectP) {
+				selectCity = i;
+				break;
+			}
+		}
+		// 从允许的城市中去掉selectCity
+		for (Integer i : allowedCities) {
+			if (i.intValue() == selectCity) {
+				allowedCities.remove(i);
+				break;
+			}
+		}
+	
+		// 在禁忌表中添加selectCity
+		tabu.add(Integer.valueOf(selectCity));
+		// 将当前城市改为选择城市
+		currentCity = selectCity;
+		return selectCity;
+	}
+	
+	public int calculateTourLength() {
+		int len = 0;
+		for (int i = 0; i &lt; tabu.size() - 1; i++) {
+			len += distance[this.tabu.get(i).intValue()][this.tabu.get(i + 1).intValue()];
+		}
+		return len;
+	}
+}
+</code></pre>
+
+<p>ACO.java</p>
+
+<pre><code>import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Vector;
+import java.util.function.Consumer;
+
+public class ACO {
+
+	private Ant[] ants;
+	private int antNum;
+	private int cityNum;
+	private int MAX\_GEN;
+	private float[][] pheromone;
+	private float[][] distance;
+	private float bestLength;
+
+	private float alpha;
+	private float beta;
+	private float lamda;
+	private float omga;
+	private float rho;
+
+	private float[] Q;// 供应商的发送量
+	private float[] T;// 供应商的集货时间
+	private float V = 40; // 车辆速度
+
+	private float Q\_max = 41;
+	private float L\_max = 200;
+	private float T\_max = 7.0f;
+
+	public ACO() {
+
+	}
+
+	public ACO(int antNum, int max\_Gen, float alpha, float beta, float lamda, float omga, float rho) {
+		this.antNum = antNum;
+		this.MAX\_GEN = max\_Gen;
+		this.ants = new Ant[antNum];
+		this.alpha = alpha;
+		this.beta = beta;
+		this.lamda = lamda;
+		this.omga = omga;
+		this.rho = rho;
+	}
+
+	private float[] parseFloat(String[] sigs) {
+		float[] res = new float[sigs.length];
+		for (int i = 0; i &lt; sigs.length; i++) {
+			res[i] = Float.valueOf(sigs[i]);
+		}
+		return res;
+	}
+
+	public void init(String fileName) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+		String buff;
+		buff = reader.readLine();
+		String[] segments = buff.split("	");
+		cityNum = segments.length - 3;
+		distance = new float[cityNum][cityNum];
+		Q = new float[cityNum];
+		T = new float[cityNum];
+		
+		for (int i = 0; i &lt; cityNum; i++) {
+			buff = reader.readLine();
+			segments = buff.split("	");
+			distance[i] = parseFloat(Arrays.copyOfRange(segments, 1, 12));
+			Q[i] = Integer.valueOf(segments[segments.length - 2]);
+			T[i] = Float.valueOf(segments[segments.length - 1]);
+		}
+		// 初始化信息素
+		pheromone = new float[cityNum][cityNum];
+		for (int i = 0; i &lt; cityNum; i++) {
+			for (int j = 0; j &lt; cityNum; j++) {
+				pheromone[i][j] = 0.1f;
+			}
+		}
+	
+		bestLength = Integer.MAX\_VALUE;
+	
+		// 随机放置蚂蚁
+		for (int i = 0; i &lt; antNum; i++) {
+			ants[i] = new Ant(cityNum, Q, T, V, Q\_max, L\_max, T\_max);
+			ants[i].init(distance, alpha, beta, lamda, omga);
+		}
+		reader.close();
+	}
+	
+	public class Wrap{
+		public int gen;
+	}
+
+	public void solve() {
+		final Wrap wrap = new Wrap();
+		for (int g = 0; g &lt; MAX\_GEN; g++) {
+			//----------JAVA\_8 BEGIN
+			wrap.gen = g;
+			Arrays.asList(ants).parallelStream().forEach(new Consumer&lt;Ant&gt;() {
+			
+				public void accept(Ant ant) {
+				
+					for (int j = 1; j &lt; cityNum; j++) {
+						if (!ant.getAllowedCities().isEmpty()) {
+							int selectCity = ant.selectNextCity(pheromone);// FIXME
+																					// 需要修改的地方
+							if (ant.selectCityIsOK(selectCity)) {
+								ant.updateLoadQ(selectCity);
+							} else {
+								if (ant.getTabu().lastElement() != ant.getFirstCity()) {
+									ant.getTabu().add(ant.getFirstCity());
+								}
+								j = j - 1;
+								ant.resetLoad();
+							}
+						}
+					}
+					if (ant.getTabu().lastElement() != ant.getFirstCity()) {
+						ant.getTabu().add(ant.getFirstCity());
+					}
+					if (ant.getTourLength() &lt; bestLength) {
+						bestLength = ant.getTourLength();
+						printOptimal(ant, wrap.gen);
+					}
+					for (int j = 0; j &lt; cityNum; j++) {
+						ant.getDelta()[ant.getTabu().get(j).intValue()][ant.getTabu().get(j + 1).intValue()] = (float) (1.0f / ant
+								.getTourLength());
+						ant.getDelta()[ant.getTabu().get(j + 1).intValue()][ant.getTabu().get(j).intValue()] = (float) (1.0f / ant
+								.getTourLength());
+					}
+				}
+			});
+			//--------JAVA-8 END
+			
+			// -------JAVA-7 BEGIN
+//			for (int i = 0; i &lt; antNum; i++) {
+//				// ants[i].resetLoad();
+//				for (int j = 1; j &lt; cityNum; j++) {
+//					if (!ants[i].getAllowedCities().isEmpty()) {
+//						int selectCity = ants[i].selectNextCity(pheromone);// FIXME
+//																			// 需要修改的地方
+//						if (ants[i].selectCityIsOK(selectCity)) {
+//							ants[i].updateLoadQ(selectCity);
+//						} else {
+//							if (ants[i].getTabu().lastElement() != ants[i].getFirstCity()) {
+//								ants[i].getTabu().add(ants[i].getFirstCity());
+//							}
+//							j = j - 1;
+//							ants[i].resetLoad();
+//						}
+//					}
+//				}
+//				if (ants[i].getTabu().lastElement() != ants[i].getFirstCity()) {
+//					ants[i].getTabu().add(ants[i].getFirstCity());
+//				}
+////				print(ants[i],g);
+//				if (ants[i].getTourLength() &lt; bestLength) {
+//					bestLength = ants[i].getTourLength();
+//					printOptimal(ants[i], g);
+//				}
+//				for (int j = 0; j &lt; cityNum; j++) {
+//					ants[i].getDelta()[ants[i].getTabu().get(j).intValue()][ants[i].getTabu().get(j + 1).intValue()] = (float) (1.0f / ants[i]
+//							.getTourLength());
+//					ants[i].getDelta()[ants[i].getTabu().get(j + 1).intValue()][ants[i].getTabu().get(j).intValue()] = (float) (1.0f / ants[i]
+//							.getTourLength());
+//				}
+//			}
+			//-------JAVA-7 END
+
+			// 更新信息素
+			updatePheromone();
+
+			// 重新初始化蚂蚁
+			for (int i = 0; i &lt; antNum; i++) {
+				ants[i].init(distance, alpha, beta, lamda, omga);
+			}
+		}
+
+	}
+
+	private void updatePheromone() {
+		// 信息素挥发
+		for (int i = 0; i &lt; cityNum; i++) {
+			for (int j = 0; j &lt; cityNum; j++) {
+				pheromone[i][j] = pheromone[i][j] * (1 - rho);
+			}
+		}
+	
+		// 信息素更新
+		for (int i = 0; i &lt; cityNum; i++) {
+			for (int j = 0; j &lt; cityNum; j++) {
+				for (int k = 0; k &lt; antNum; k++) {
+					pheromone[i][j] += ants[k].getDelta()[i][j];
+		
+				}
+			}
+		}
+	}
+
+	private void printOptimal(Ant ant, int gen) {
+		System.out.println("第" + gen + "代发现新解:" + ant.calculateTourLength() + ",路线为:");
+		Vector&lt;Integer&gt; tour = new Vector&lt;Integer&gt;();
+		for (Integer m : ant.getTabu()) {
+			if (m.intValue() != 0) {
+				tour.add(m);
+			} else {
+				if (tour.size() &gt; 0) {
+					System.out.print("0 ");
+					for (Integer n : tour) {
+						System.out.print(n + " ");
+					}
+					System.out.println("0");
+					tour.clear();
+				}
+			}
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		ACO aco = new ACO(60, 10000, 1.0f, 2.0f, 0.4f, 0.6f, 0.15f);
+		aco.init("/Users/jeff/Documents/Eworkspace/AL\_DEMOS/src/ant/data.dat");
+		aco.solve();
+	}
+
+}
+</code></pre>
+
+<h2 id="note">Note</h2>
+
+<p>需要注意的是，蚁群算法并不能每次都取得最优解。</p>
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2015-05-17">2015-05-17</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#优化" title="优化">优化</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#蚁群算法" title="蚁群算法">蚁群算法</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#VRP问题" title="VRP问题">VRP问题</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/12/Sparse-Matrix-Storage-Style/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

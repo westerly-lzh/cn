@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>R代码阅读随笔[02] | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>R代码阅读随笔[02]</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>R代码阅读随笔第二篇，继续在base包中爬行，本篇主要时关于字母d开头的源码文件。</p>
+
+<hr />
+<p>##base
+—
+###D
+—–
+###data.matrix.R
+把数据框转换成matrix。当数据框中有逻辑值和因子值时，强制转换成数字。</p>
+
+<hr />
+<p>五一前后这些天在忙些其他的事情，所以源码阅读分析的进度就耽搁了些时候，不过这几天却也抽空把R Cookbook也翻了差不多一遍，关于时间序列的部分没有看，这学期旁听了时间序列这门课，现在已经到了不知所云的地步了，所以打算先把时间序列放一放。现在对R已经算是有了一些初步的认识了，自己也可以慢慢的写些代码了。但是相比于其他的语言，R有其特殊性，尤其是在介绍R的那些书中，很大一部分都是专注在R的统计应用上，这对于我这个统计的门外汉来说，想深入学习，可是理论不够（毕竟统计的应用对理论的要求比较高）;这也许是许多其他的R的学习者同样也有的困惑吧，所以对于基本的概率论和统计，我现在也是在不断的补充学习中。</p>
+
+<p>其实这两天也在思考关于我学习R的问题，R入门后，我该继续向哪个方向发展？现在基本处于自学的状态，这种情况下比较让人郁闷的一个问题，目的性不够强，我自己是属于那种任务驱动学习的情况，所以漫无目的的学习有时候感觉收获不大，达不到自己的预期。这一点让我心情最近很不爽。我该时时候给自己找些相关的任务来做做了。好了，废话少说，还是继续阅读我的源码吧</p>
+
+<hr />
+<p>###dataframe.R
+这个文件中定义了不少操作数据框的方法。再一次，要说一下在R中的一些操作的使用，比如我们使用一个数据框时：
+&gt;x &lt;- dataframe
+&gt;
+&gt;x[i,j,drop=FALSE]##获取数据框中位于（i，j）位置的元素,带有这行名和列名。这实际上是在调用一个方法。我们可以看一下该方法的命名：
+&gt;
+&gt;`[.data.frame` &lt;-
+    function(x, i, j, drop = if(missing(i)) TRUE else length(cols) == 1){}
+&gt;
+&gt;是不是稍显奇葩了，的确，在R中，下标操作实际上就是方法操作，定义了这样[.data.frame这样的方法。再看下面的:
+&gt;
+&gt;`[&lt;-.data.frame` &lt;- function(x, i, j, value){}
+&gt;
+&gt;这一行定义的方法的效果如下:
+&gt;
+&gt;x[i,j] &lt;- value</p>
+
+<p>R中这样灵活的下标定义操作，实际上是允许我们为自定义的数据结构（或者称为我们自定义的类更合适）来定义下标操作的，这相比于其他的语言如C，Java，Python是极大的灵活性（尽管，在Python中我们可以为自定义的类来定义foreach循环，但还没有灵活到自定义下标操作这样）。</p>
+
+<p>类似的R中获取对象属性的操作，x$propertyName，“$”实际上也是一个方法。</p>
+
+<p>所谓的R中方法是泛型的，我们可以这样理解，比如：
+&gt;methodName.classNameA &lt;- function(x)….
+&gt;
+&gt;methodName.classNameB &lt;- function(x)…..</p>
+
+<p>这样在调用methodName（x）时，如果x时classNameA类型的，则，使用methodName.classNameA这个方法，如果x是classNameB类型的，则使用methodName.classNameB这个方法。说到底这就是通过参数类型来决定到底调用哪个方法。当然如果传入的参数最终没有匹配的类型，那么肯定也是要抛错的啦。
+###dates.R
+这里定义了日期转换，这里的日期就确确实实是指的日期了，仅包含年月日。值得注意的是泛型方法seq的实现，要考虑月份的天数的变换。这时seq.Date是通过unclass先把from和to的日期转换成1970-01-01以来的天数，就得到了int_from,int_to,然后使用int的seq方法，生成序列，然后再通过structure把生成序列的天数包装成Date对象。这个unclass把日期生成对应的天数和通过structure把天数转换成日期的具体实现，我没有找到。
+###datetime.R
+这里主要定义了POSIX标准下的时间转换和difftime的各种操作。在这里又遇见Ops.className这种定义比较运算的方式，看来要在适当的地方单独写一篇在R中<strong>关于比较操作的方法定义</strong>的文档了。
+###dcf.R
+按照使用文档中的说法，dcf是Debain Control File 的文件格式，按照tag：value的格式按行排列，有点类似于Map，但允许tag的重复。和Properties文件格式差不多吧.
+###debug.R
+这里定义了对R进行调试的方法，简单的试用过R的debug函数，当然对于控制台的命令调用，采用这种debug方式算是比较好的了，不过，如果能有专门的可视化调试，那么讲极大的方便程序开发。尤其是对R的初学者来说，R复杂的对象体系，让人经常摸不着头脑，如果有个可视化的调试工具，那就谢天谢地了。
+###Defunct.R,Deprecated.R
+相当于Java中的Deprecated注解的作用吧，不过更好的时，使用时会提供建议更换的方法。
+###delay.R
+延迟赋值，这种机制使得，当变量在第一次被使用时才对赋值语句进行计算，来对变量进行赋值。
+###det.R
+计算方阵的行列式。暂不支持复数方阵。
+###diag.R
+生成对角阵，diag(x,nrow,ncol)三个参数的作用
+如果只是给定x，那么生成为x维度的单位阵，如果给定了x和nrow和ncol的其中之一，令之为n那么生成一个n维的，对角元素为x的方阵，如果三个参数都给定了则生成一个nrow×ncol维度的，左上对角元素为x的矩阵。
+###diff.R
+计算相邻延迟参数指定的两元素之间的差值，如果是矩阵，则按行计算。
+###dput.R，dump.R
+以ASCII格式序列化R对象到文本文件。二者有所区别，dput会丢失上下文信息，并且没有保存序列化的R对象的名字，而dump则完整的保存了上下文信息。
+###duplicated.R
+定义了一些用来比较向量，矩阵等数据结构中，是否有重复元素的方法。
+###dyload.R
+动态载入系统链接库。</p>
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-05-03">2013-05-03</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#it" title="it">it</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#R" title="R">R</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/04/R-Source-Reading-Story-01/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/05/Life-Is-A-Little-Busy/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

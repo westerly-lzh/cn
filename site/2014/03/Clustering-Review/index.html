@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>聚类综述(转) | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>聚类综述(转)</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<h2 id="section">聚类算法的种类</h2>
+
+<h4 id="partition-clustering">基于划分聚类算法(partition clustering)</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名称</th>
+      <th>简介</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>k-means</td>
+      <td>是一种典型的划分聚类算法，它用一个聚类的中心来代表一个簇，即在迭代过程中选择的聚点不一定是聚类中的一个点，该算法只能处理数值型数据</td>
+    </tr>
+    <tr>
+      <td>k-modes</td>
+      <td>K-Means算法的扩展，采用简单匹配方法来度量分类型数据的相似度</td>
+    </tr>
+    <tr>
+      <td>k-prototypes</td>
+      <td>结合了K-Means和K-Modes两种算法，能够处理混合型数据</td>
+    </tr>
+    <tr>
+      <td>k-medoids</td>
+      <td>在迭代过程中选择簇中的某点作为聚点，PAM是典型的k-medoids算法</td>
+    </tr>
+    <tr>
+      <td>CLARA</td>
+      <td>CLARA算法在PAM的基础上采用了抽样技术，能够处理大规模数据</td>
+    </tr>
+    <tr>
+      <td>CLARANS</td>
+      <td>CLARANS算法融合了PAM和CLARA两者的优点，是第一个用于空间数据库的聚类算法</td>
+    </tr>
+    <tr>
+      <td>Focused CLARAN</td>
+      <td>采用了空间索引技术提高了CLARANS算法的效率</td>
+    </tr>
+    <tr>
+      <td>PCM</td>
+      <td>模糊集合理论引入聚类分析中并提出了PCM模糊聚类算法</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="section-1">基于层次聚类算法</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名称</th>
+      <th>简介</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CURE</td>
+      <td>采用抽样技术先对数据集D随机抽取样本，再采用分区技术对样本进行分区，然后对每个分区局部聚类，最后对局部聚类进行全局聚类</td>
+    </tr>
+    <tr>
+      <td>ROCK</td>
+      <td>也采用了随机抽样技术，该算法在计算两个对象的相似度时，同时考虑了周围对象的影响</td>
+    </tr>
+    <tr>
+      <td>CHEMALOEN（变色龙算法）</td>
+      <td>首先由数据集构造成一个K-最近邻图Gk ,再通过一个图的划分算法将图Gk 划分成大量的子图,每个子图代表一个初始子簇,最后用一个凝聚的层次聚类算法反复合并子簇，找到真正的结果簇</td>
+    </tr>
+    <tr>
+      <td>SBAC</td>
+      <td>SBAC算法则在计算对象间相似度时，考虑了属性特征对于体现对象本质的重要程度，对于更能体现对象本质的属性赋予较高的权值</td>
+    </tr>
+    <tr>
+      <td>BIRCH</td>
+      <td>BIRCH算法利用树结构对数据集进行处理，叶结点存储一个聚类，用中心和半径表示，顺序处理每一个对象，并把它划分到距离最近的结点，该算法也可以作为其他聚类算法的预处理过程</td>
+    </tr>
+    <tr>
+      <td>BUBBLE</td>
+      <td>BUBBLE算法则把BIRCH算法的中心和半径概念推广到普通的距离空间</td>
+    </tr>
+    <tr>
+      <td>BUBBLE-FM</td>
+      <td>BUBBLE-FM算法通过减少距离的计算次数，提高了BUBBLE算法的效率</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="section-2">基于密度聚类算法</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名称</th>
+      <th>简介</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>DBSCAN</td>
+      <td>DBSCAN算法是一种典型的基于密度的聚类算法，该算法采用空间索引技术来搜索对象的邻域，引入了“核心对象”和“密度可达”等概念，从核心对象出发，把所有密度可达的对象组成一个簇</td>
+    </tr>
+    <tr>
+      <td>GDBSCAN</td>
+      <td>算法通过泛化DBSCAN算法中邻域的概念，以适应空间对象的特点</td>
+    </tr>
+    <tr>
+      <td>DBLASD</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>OPTICS</td>
+      <td>OPTICS算法结合了聚类的自动性和交互性，先生成聚类的次序，可以对不同的聚类设置不同的参数，来得到用户满意的结果</td>
+    </tr>
+    <tr>
+      <td>FDC</td>
+      <td>FDC算法通过构造k-d tree把整个数据空间划分成若干个矩形空间，当空间维数较少时可以大大提高DBSCAN的效率</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="section-3">基于网格的聚类算法</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名称</th>
+      <th>简介</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>STING</td>
+      <td>利用网格单元保存数据统计信息，从而实现多分辨率的聚类</td>
+    </tr>
+    <tr>
+      <td>WaveCluster</td>
+      <td>在聚类分析中引入了小波变换的原理，主要应用于信号处理领域。（备注 ：小波算法在信号处理，图形图像，加密解密等领域有重要应用，是一种比较高深和牛逼的东西）</td>
+    </tr>
+    <tr>
+      <td>CLIQUE</td>
+      <td>是一种结合了网格和密度的聚类算法</td>
+    </tr>
+    <tr>
+      <td>OPTIGRID</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="section-4">基于神经网络的聚类算法 ：</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名称</th>
+      <th>简介</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>自组织神经网络SOM</td>
+      <td>该方法的基本思想是–由外界输入不同的样本到人工的自组织映射网络中，一开始时，输入样本引起输出兴奋细胞的位置各不相同，但自组织后会形成一些细胞群，它们分别代表了输入样本，反映了输入样本的特征</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="section-5">基于统计学的聚类算法 ：</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名称</th>
+      <th>简介</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>COBWeb</td>
+      <td>COBWeb是一个通用的概念聚类方法，它用分类树的形式表现层次聚类</td>
+    </tr>
+    <tr>
+      <td>CLASSIT</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>AutoClass</td>
+      <td>是以概率混合模型为基础，利用属性的概率分布来描述聚类，该方法能够处理混合型的数据，但要求各属性相互独立</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="section-6">聚类算法的比较</h2>
+
+<p>几种常用的聚类算法从可伸缩性、适合的数据类型、高维性（处理高维数据的能力）、异常数据的抗干扰度、聚类形状和算法效率6个方面进行了综合性能评价，评价结果如表1所示 ：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>算 法 名 称</th>
+      <th>可伸缩性</th>
+      <th>适合的数据类型</th>
+      <th>高维性</th>
+      <th>异常数据的抗干扰性</th>
+      <th>聚类形状</th>
+      <th>聚类形状</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>WaveCluster</td>
+      <td>很高</td>
+      <td>数值型</td>
+      <td>很高</td>
+      <td>较高</td>
+      <td>任意形状</td>
+      <td>很高</td>
+    </tr>
+    <tr>
+      <td>ROCK</td>
+      <td>很高</td>
+      <td>混合型</td>
+      <td>很高</td>
+      <td>很高</td>
+      <td>任意形状</td>
+      <td>一般</td>
+    </tr>
+    <tr>
+      <td>BIRCH</td>
+      <td>较高</td>
+      <td>数值型</td>
+      <td>较低</td>
+      <td>较低</td>
+      <td>球形</td>
+      <td>很高</td>
+    </tr>
+    <tr>
+      <td>CURE</td>
+      <td>较高</td>
+      <td>数值型</td>
+      <td>一般</td>
+      <td>很高</td>
+      <td>任意形状</td>
+      <td>较高</td>
+    </tr>
+    <tr>
+      <td>K-Prototypes</td>
+      <td>一般</td>
+      <td>混合型</td>
+      <td>较低</td>
+      <td>较低</td>
+      <td>任意形状</td>
+      <td>一般</td>
+    </tr>
+    <tr>
+      <td>DENCLUE</td>
+      <td>较低</td>
+      <td>数值型</td>
+      <td>较高</td>
+      <td>一般</td>
+      <td>任意形状</td>
+      <td>较高</td>
+    </tr>
+    <tr>
+      <td>OptiGrid</td>
+      <td>一般</td>
+      <td>数值型</td>
+      <td>较高</td>
+      <td>一般</td>
+      <td>任意形状</td>
+      <td>一般</td>
+    </tr>
+    <tr>
+      <td>CLIQUE</td>
+      <td>较高</td>
+      <td>数值型</td>
+      <td>较高</td>
+      <td>较高</td>
+      <td>任意形状</td>
+      <td>较低</td>
+    </tr>
+    <tr>
+      <td>DBSCAN</td>
+      <td>一般</td>
+      <td>数值型</td>
+      <td>较低</td>
+      <td>较高</td>
+      <td>任意形状</td>
+      <td>一般</td>
+    </tr>
+    <tr>
+      <td>CLARANS</td>
+      <td>较低</td>
+      <td>数值型</td>
+      <td>较低</td>
+      <td>较高</td>
+      <td>球形</td>
+      <td>较低</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="section-7">聚类算法研究内容</h2>
+
+<table>
+  <tbody>
+    <tr>
+      <td>对聚类进行研究是数据挖掘中的一个热门方向，由于以上所介绍的聚类方法都存在着某些缺点，因此近些年对于聚类分析的研究很多都专注于改进现有的聚类方法或者是提出一种新的聚类方法。以下将对传统聚类方法中存在的问题以及人们在这些问题上所做的努力做一个简单的总结</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>
+    <p>从以上对传统的聚类分析方法所做的总结来看，不管是k-means方法，还是CURE方法，在进行聚类之前都需要用户事先确定要得到的聚类的数目。然而在现实数据中，聚类的数目是未知的，通常要经过不断的实验来获得合适的聚类数目，得到较好的聚类结果。</p>
+  </li>
+  <li>
+    <p>传统的聚类方法一般都是适合于某种情况的聚类，没有一种方法能够满足各种情况下的聚类，比如BIRCH方法对于球状簇有很好的聚类性能，但是对于不规则的聚类，则不能很好的工作；K-medoids方法不太受孤立点的影响，但是其计算代价又很大。因此如何解决这个问题成为当前的一个研究热点，有学者提出将不同的聚类思想进行融合以形成新的聚类算法，从而综合利用不同聚类算法的优点，在一次聚类过程中综合利用多种聚类方法，能够有效的缓解这个问题。</p>
+  </li>
+  <li>
+    <p>随着信息时代的到来，对大量的数据进行分析处理是一个很庞大的工作，这就关系到一个计算效率的问题。有文献提出了一种基于最小生成树的聚类算法，该算法通过逐渐丢弃最长的边来实现聚类结果，当某条边的长度超过了某个阈值，那么更长边就不需要计算而直接丢弃，这样就极大地提高了计算效率，降低了计算成本。</p>
+  </li>
+  <li>
+    <p>处理大规模数据和高维数据的能力有待于提高。目前许多聚类方法处理小规模数据和低维数据时性能比较好，但是当数据规模增大，维度升高时，性能就会急剧下降，比如k-medoids方法处理小规模数据时性能很好，但是随着数据量增多，效率就逐渐下降，而现实生活中的数据大部分又都属于规模比较大、维度比较高的数据集。有文献提出了一种在高维空间挖掘映射聚类的方法PCKA（Projected Clustering based on the K-Means Algorithm），它从多个维度中选择属性相关的维度，去除不相关的维度，沿着相关维度进行聚类，以此对高维数据进行聚类。</p>
+  </li>
+  <li>
+    <p>目前的许多算法都只是理论上的，经常处于某种假设之下，比如聚类能很好的被分离，没有突出的孤立点等，但是现实数据通常是很复杂的，噪声很大，因此如何有效的消除噪声的影响，提高处理现实数据的能力还有待进一步的提高。</p>
+  </li>
+</ol>
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-03-20">2014-03-20</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#dm" title="dm">dm</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Clustering" title="Clustering">Clustering</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/02/Statistic-Test/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/04/Null-Parameter-Test/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

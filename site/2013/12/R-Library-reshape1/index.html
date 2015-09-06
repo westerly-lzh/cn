@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>R数据重塑：reshape2 学习[1] | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>R数据重塑：reshape2 学习[1]</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>在数据分析中，经常需要对原始数据进行重塑，在R中对数据进行重塑，可以使用reshape包，也可以使用reshape2，reshape2是对reshape的重构，这里介绍reshape2中方法的使用及其功能</p>
+
+<h2 id="addmargins">add_margins</h2>
+<p>###add_margins(df,vars,margins=TRUE)
+* df，将要被重塑的数据框</p>
+
+<ul>
+  <li>
+    <p>vars，df中的列名list,</p>
+  </li>
+  <li>
+    <p>margins，指定计算那些列的重塑。</p>
+  </li>
+</ul>
+
+<p>该函数的作用是对给定的数据框进行重塑，重塑的内容是对给定的数据框，以给定的列名得到所有可能的组合.比如给定的vars=c(“A”,”B”,”C”),那么所有可能的组合为c(“A”);c(“B”);c(“C”);c(“A”,”B”);c(“B”,”C”);c(“A”,”C”);c(“A”,”B”,”C”).然后按照把这些组合所表示的列从原始数据框中赋值为为”(all)”,得到新的数据框。最后把这些数据框再按照行的形式拼接起来。而margins参数指定了那些列的组合将会被计算比如margins=c(“A”,”B”),则由vars指定的那些列的组合中只有c(“A”),c(“B”),c(“A”,”B”)将会被处理。而margins=TRUE时则vars中指定的列都会被计算。</p>
+
+<pre><code>d &lt;- matrix(1:9,3,3)
+d &lt;- as.data.frame(d)
+colnames(d)&lt;-c("A","B","C")
+add_margins(as.data.frame(d),vars=c("A","B","C"),margins=c("A","B"))
+输出如下：
+       A     B C
+1      1     4 7
+2      2     5 8
+3      3     6 9
+4  (all)     4 7
+5  (all)     5 8
+6  (all)     6 9
+7      1 (all) 7
+8      2 (all) 8
+9      3 (all) 9
+10 (all) (all) 7
+11 (all) (all) 8
+12 (all) (all) 9
+</code></pre>
+
+<h2 id="melt">melt</h2>
+<p>函数melt做的事情就是把输入的数据表示成相应的二维矩阵。
+###melt.data.frame(data, id.vars,measure.vars,variable.name = “variable”, …, na.rm = FALSE,value.name = “value”)</p>
+
+<ul>
+  <li>data，将要被重塑的数据框</li>
+  <li>id.vars,转变后的数据将以id.vars指定的列为</li>
+  <li>measure.vars，重塑后的数据，将以measure.vars指定的列为控制列，如果没有指定measure.vars，那么将以data中除掉id.vars中的列为控制列，</li>
+  <li>variable.name，指定measure.vars中列在重塑后数据中的变量名所在列的列名</li>
+  <li>value.name,指定measure.vars中列在重塑后数据的变量值所在列的列名</li>
+</ul>
+
+<p>下面是一个使用melt的例子：</p>
+
+<pre><code>d &lt;- matrix(1:16,4,4)
+d&lt;- as.data.frame(d)
+colnames(d) &lt;- c("A","B","C","D")
+melt(d,id.vars=c("A","B"))
+
+ 输出如下：
+  A B variable value
+1 1 5        C     9
+2 2 6        C    10
+3 3 7        C    11
+4 4 8        C    12
+5 1 5        D    13
+6 2 6        D    14
+7 3 7        D    15
+8 4 8        D    16
+</code></pre>
+
+<h3 id="meltarraydatavarnames--namesdimnamesdata--narm--falsevaluename--value">melt.array(data,varnames = names(dimnames(data)), …, na.rm = FALSE,value.name = “value”))</h3>
+
+<ul>
+  <li>data,将要被重塑的数据，类型可以是数组，矩阵及table</li>
+  <li>varnames,每个变量的名字</li>
+</ul>
+
+<p>melt.array比较容易理解，我们可以这样来解释，对于多维数组来说，melt得到的变量实际上是多维数组中每个维度的坐标，得到的value实际上是处于那个坐标位置的值，这样，melt实际上是把一个多维数据用一个二维矩阵来表示了。现在来看一个例子</p>
+
+<pre><code>a &lt;- array(c(1:7, NA), c(2,2,2))
+a
+####输出：
+, , 1
+
+ [,1] [,2]
+[1,]    1    3
+[2,]    2    4
+
+, , 2
+
+ [,1] [,2]
+[1,]    5    7
+[2,]    6   NA
+
+melt(a)
+	Var1 Var2 Var3 value
+1    1    1    1     1
+2    2    1    1     2
+3    1    2    1     3
+4    2    2    1     4
+5    1    1    2     5
+6    2    1    2     6
+7    1    2    2     7
+8    2    2    2    NA
+</code></pre>
+
+<p>上面melt得到的数据前三列Var1，Var2，Var3实际上是多维数组a上的维度坐标，而得到的value列就是多维数组在该坐标下得值。</p>
+
+<h3 id="meltlistdata--level--1">melt.list(data, …, level = 1)</h3>
+<ul>
+  <li>data, 输入的list类型数据</li>
+</ul>
+
+<p>针对list类型的melt比较简单，就是对list中的每一个元素递归的调用相应的melt方法得到一个二维矩阵，然后再把list中元素的坐标cbind到这个二维矩阵上。</p>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-12-13">2013-12-13</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#it" title="it">it</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#R" title="R">R</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/11/The-Twelfth-Week-Of-This-Term/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/12/R-Library-reshape2/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

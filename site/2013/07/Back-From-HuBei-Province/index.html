@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>湖北三日后 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>湖北三日后</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>本月的13-16这几天去了趟湖北，目的是参见一个公司的生产及销售调研。以前是没有到过湖北的，这次才真真的感受到了大湖北的酷暑难耐。</p>
+
+<p>还是闲话少说，转入正题，这次调研取得了近15个G的数据，当然是压缩过的，压缩率为75%左右，所以解压后大约60G吧，这数据量该公司的某工厂在近几年的生产车间仪器监控数据。所使用的监控系统是<a href="http://www.supcon.com">浙江中控</a>的Advantrol-Pro系统。回到我大成都后，我对这套系统做了初步的了解，并且在本地安装成功，用的还是古老的Windows2000系统，对于现在的大学生来说，是相当陌生的一个系统了(现在的大学生接触比较早的可能都是XP吧)。不管三七二一的先把系统装上，软件安装好再说。在大湖北现场看到工厂那边的工程师可以很轻松的打开那些数据文件，到了我这里，却怎么也打不开了，这就让我很不爽了。当然，这软件完整正常安装运行后是必须要要对设备仪器做好监控后才能正常使用的，我这里就是无法运行监控的，只能把相应的数据文件塞到相应的文件夹下，然后看是否可以侥幸打开历史趋势数据。这里我是悲催了。</p>
+
+<p>比较让人纠结的是这套系统产生的历史监控数据是无法自由打开的，就是它使使用的自己的专有格式，只有通过该系统提供的一个历史数据查看器来打开，就是一个桌面软件，来查看选定的某一时间段的数据的趋势图。但是这对我要对这大量的数据做分析时毫无意义的，我需要的是可以自由，自动读取这些数据的程序。该系统的这种限制，让我很是恼火，越发的觉得Unix的一条设计哲学思想是在是太有远见—所有的数据都是文本，文本在所有系统上是通用的。</p>
+
+<p>现在我接下来的方案有两个，一个是继续和大湖北工厂里的工程师联系，看看能否把其他相应的一些文件拷贝到我这里来，另一个就是直接联系浙大中控了。但后者明显是最后的策略。</p>
+
+<p>就在刚刚，大湖北工厂那边的工程师给我发来了一批数据，按照我的目测这次的数据应当是没有问题的（这目测是建立在经验上的，应当比较可靠吧），然后赶紧解压测试一下，果然这次的数据是可以使用的。下面的问题就是怎么吧这些数据抽取出来了。但按照我现在的理解，我要是想做数据抽取，那么我就必须了解这些历史趋势数据的格式，但这些数据是经过压缩的二进制数据，而且数据压缩方法未知，那么要想了解这些数据的压缩方法，就只有破解这个历史数据趋势查看器软件了，这样子做是比较阴险的方法吧。但破解软件又不是我的能力范围，看来只有找个帮手了。不过目前能通过这个历史数据趋势查看器能查看这些数据，也是我完成的的目标之一了。好歹先暂时可以对上有个交代。</p>
+
+<p>从湖北回来后的这几天，当然也在忙另一个事情，就是我已经耽搁多时的IOS开发，想在放假离校之前把之前已经确定的完成的IOS功能结束了。这几天就一直也在忙这个事情，这个主要是一个地图的应用，现在使用的<a href="http://developer.baidu.com/map/sdk-ios.htm">百度地图</a>，不过如果想要做完那些功能，还不仅仅是百度地图的SDK那么简单，还会要涉及到<a href="http://developer.baidu.com/map/car.htm">百度车联网</a>的API使用，之前稍微的瞄了下车联网的API,基本是些REST风格的，由于之前有对REST风格的社交平台API有过接触，所以还是可以很快上手。现在比较棘手的问题还是出在对IOS的控件不熟上，首先是不能很好地组织功能代码，其实是运行出来的效果不美观，这简直就是乔帮主的侮辱啊。而且对IOS几个框架也不是很熟，所以现在属于摸着石头过河的阶段，代码总是写了改，改了再改。</p>
+
+<p>但现在基本是可以展示地图了，而且地图上的那些个比例尺，缩放及地图模式的切换工作基本完成了，但是不知道为什么设定特定的经纬坐标时，地图总是不能正常工作。接下来要做的事情就是把各个功能界面的跳转好好的设计下，然后把一些IOS的展现效果满满的修正下，不然实在是对不起乔老大的在天之灵。</p>
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-07-20">2013-07-20</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#生活" title="生活">生活</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#出差" title="出差">出差</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Mac" title="Mac">Mac</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/07/From-WIndows-To-Others/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/08/GDB-Tips/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

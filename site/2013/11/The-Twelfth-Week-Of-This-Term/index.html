@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>第一学期第12周 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>第一学期第12周</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<p>现在已经到了开始期末复习的时间点了，所以这周有花一些时间在看书。根据上周制定的计划，完成了主成分分析，因子分析的推导过程，ActivitiDemos的演示也已经完成，新都化工的数据处理交给了同门来做，剩下的关于LDA的Gibbs抽样没有看，PM课程的论文也没有看。现在看英文还是有些发憷的感觉。不过这周把《Data Analysis with Open Source Tools》看了不少,现在把这周具体完成的事情罗列下.</p>
+
+<p>首先是WebProtege，一个关于知识地图的web工具，本周研究了下该工具的查询及存储实现，但是发现和导师的项目需求还是有很大的差距，有差距就意味着有改进的地方。WebProtege使用的是文件系统存储，而原来以为其使用的是Mongodb，但是Mongodb知识在存储一些实时讨论信息时才会使用，也就是说在整个的Protege中，对数据库的利用极其有限，这是我们可以扩展的地方之一；其二，其搜索功能的实现是基于正则表达式的，当内部的项目文档比较多时，搜索需要跨项目时，是具有严重的性能瓶颈的（但是现在没有，是因为其搜索功能的实现是针对选定的特定的项目的），这也是可以改进的地方。但整个的WebProtege是基于GWT开发的，所以其技术栈的学习成本比较高，但仍然在可以接受的范围之内。</p>
+
+<p>其次是关于ActivitiDemos的演示，本次演示实现了人工节点的流程演示功能，掌握了Activiti Explorer的具体应用。针对Activiti的表单有了基本的了解，但是觉得其表单系统仍然需要很大的改进（也可能是我自己还没有搞清楚其表单的更复杂用法），比较重要的是表单的传递，比如说某人提交的一个表单，我如何可以传递到下一个审批节点，并且可以增加新的表单数据或者减少原有的表单数据。对于Activiti的内置权限系统，如果需要重新开发，该如何进行。毕竟Activiti的内置权限还是比较简单的，在企业应用中，企业的权限系统肯定是更为复杂多变，而且企业也不想把权限系统交由Activiti来管理，所以需要在企业权限和Activiti权限之间做适配，如何适配是应用开发者需要仔细掂量的事情。Activiti Modeler还是比较不好的，和以前在公司做的BPM Web Editor相比，有一些比较明显的差距。 不过最后觉得Activiti Explorer使用的web开发框架还是比较有意思的，其基本思路与GWT有异曲同工之妙，如果有需要可以了解一下。</p>
+
+<p>关于《Data Analysis with Open Source Tools》，我觉得书是很不错的书，而且在每一章节后面的一些主题相关的推荐书目，比较让人喜欢。这比那些把参考书目写到整本书的最后面要好的多，最起码通过在每章节后面列出推荐书目，让那些想深入学些相关主题的人可以继续探寻下去。在这本虽然不是专门讲数据绘图的书，但是其中涉及的一些图的解释，让我在之前使用R时对一些图的模糊概念有了一些很清晰的认识。而且我也有该书的电子英文版，感觉英文版也是写的通俗易懂，可以拿来直接读。我打算近期把这本书迅速看完，然后在从其推荐书目中找出几本比较感兴趣的，好好的读一下。</p>
+
+<p>关于近一个月来的Yahoo爬数据的事情，现在总算有了新的进展，以前写的爬虫代码，总是一段时间后就需要重新启动执行，现在经过修改后，在网络正常情况下可以自动执行，不需要人的干预了，其主要原因在于，我之前的代码是面向过程的，所以在方法中是无法修改全局变量的，于是只需要把爬虫程序对象化就ok了，现在我把整个程序放在了一个类中，执行起来就没问题了，但有时候程序仍会异常跳出，其主要原因还是网络状况不够好。</p>
+
+<p>这周的学习计划如下：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>编号</th>
+      <th>内容</th>
+      <th>备注</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>PM论文阅读及PPT总结</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Gibbs论文阅读</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Data Analysis with Open Source Tools 结束</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>构思Multivariate Statistical Analysis 结课Paper</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Data Mining 结课Case构思</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>新都项目任务（作业量无法估计）</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2013-11-24">2013-11-24</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#生活" title="生活">生活</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#生活" title="生活">生活</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#学习" title="学习">学习</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#作业" title="作业">作业</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#计划" title="计划">计划</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/11/Linux-Miscellaneous-3/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2013/12/R-Library-reshape1/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

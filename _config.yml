@@ -1,17 +1,17 @@
 markdown: kramdown
 permalink: /:year/:month/:title/
 github: westerly-lzh
-url: http://jeff-lee.name/cn
+url: http://westerly-lzh.github.io/cn
 author: Jeff Lee
 name: Jeff Lee
 email: westerly.lzh@gmail.com
-pygments: true
+highlighter: pygments
 safe: true
 
 
 #markdown: rdiscount
 #permalink: /:year/:month/:title/
-#url: http://jeff-lee.name/cn
+#url: http://westerly-lzh.github.io/cn
 #author: Jeff Lee
 #pygments: true
 

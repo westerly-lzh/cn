@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+	<meta name="keywords" content="OS Mac FreeBSD IT Life SQL R Python">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="msvalidate.01" content="7313642929DA4526295A793C9999DE3A" />
+    <meta name="author" content="Jeff Lee" />
+    <title>Jpa CascadeType 详解 | Jeff Lee</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="http://westerly-lzh.github.io/cn/feed/" rel="alternate" title="Jeff Lee" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script> -->
+    <!-- <script type="text/javascript" src="/media/js/d3.min.js" charset="utf-8"></script> -->
+    <script type="text/javascript" src="/media/js/outline.js"></script>
+
+    <!-- MathJax for LaTeX -->
+        <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            	skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$'],['$$$','$$$'],["\\(","\\)"]],
+                displayMath: [['$$','$$'],["\\[","\\]"]],
+                processEscapes: true
+            }
+        });
+        </script>
+        <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  	<style>
+  	code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+  	</style>
+  </head>
+
+  <body>
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>Jpa CascadeType 详解</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="http://westerly-lzh.github.io/cn/">Home</a></span>
+        <span><a title="about" class="" href="http://westerly-lzh.github.io/cn/about/">About</a></span>
+        <span><a title="publication" class="" href="http://westerly-lzh.github.io/cn/publication/">Publication</a></span>
+        <span><a title="categories" class="" href="http://westerly-lzh.github.io/cn/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="http://westerly-lzh.github.io/cn/tags/">Tags</a></span>
+        <span><a title="links" class="" href="http://westerly-lzh.github.io/cn/links/">Links</a></span>
+        <span><a title="subscribe by RSS" class="" href="http://westerly-lzh.github.io/cn/feed/">RSS</a></span>
+        </nav>
+        <article class="content">
+        <section class="post">
+<h2 id="background">Background</h2>
+
+<p>网上关于JPA的CascadeType讲解很多，但几乎都说的很模糊.本文试图使用一个具体的例子来说明CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.ALL 具体区别。</p>
+
+<p>首先，我们使用一个订单和订单项的例子。该例子在网络上那些介绍JPA CascadeType用法的文章钟广为流传。</p>
+
+<pre><code>/**
+ * 订单
+ */
+@Entity
+@Table(name="t_order")
+public class Order {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	@Column
+	private String name;
+	@OneToMany(mappedBy="order",targetEntity=Item.class,fetch=FetchType.LAZY)
+	private List&lt;Item&gt; items;
+｝
+
+/**
+ *订单项
+ */
+@Entity
+@Table(name="t_item")
+public class Item {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	@Column
+	private String name;
+	@ManyToOne(fetch=FetchType.LAZY,targetEntity=Order.class)
+	@JoinColumn(name="order_id")
+	private Order order;
+｝
+
+/** Order Repository */
+public interface OrderRepository extends JpaRepository&lt;Order, Integer&gt;,
+	JpaSpecificationExecutor&lt;Order&gt; {
+
+}
+
+/** Item Repository */
+public interface ItemRepository extends JpaRepository&lt;Item, Integer&gt;,
+	JpaSpecificationExecutor&lt;Item&gt; {
+
+}
+</code></pre>
+
+<h2 id="cascadetypepersist">场景1，新增~~(保存)~~数据(<code>CascadeType.PERSIST</code>)</h2>
+
+<p>客户每次下完订单后，需要保存Order，但是订单里含有Item，因此，在保存Order时候，Order相关联的Item也需要保存。采用上面的模型，使用如下的测试代码：</p>
+
+<pre><code>@Test
+public void addTest(){
+	Order order = new Order();
+	order.setName("order1");
+	
+	Item item1 = new Item();
+	item1.setName("item1_order1");
+	item1.setOrder(order);
+	
+	Item item2 = new Item();
+	item2.setName("item2_order1");
+	item2.setOrder(order);
+	
+	List&lt;Item&gt; items = new ArrayList&lt;Item&gt;();
+	items.add(item1);
+	items.add(item2);
+	order.setItems(items);
+	
+	orderRepository.save(order);	
+	Assert.assertEquals(1,orderRepository.count());
+	Assert.assertEquals(2,itemRepository.count());
+	
+	//代码段1
+	itemRepository.save(order);	
+	Assert.assertEquals(1,orderRepository.count());
+	Assert.assertEquals(2,itemRepository.count());
+	
+	//代码段2
+	//itemRepository.save(items);
+	//Assert.assertEquals(1,orderRepository.count());
+	//Assert.assertEquals(2,itemRepository.count());
+}
+</code></pre>
+
+<p>在该场景中，我们分别测试如下情况：</p>
+
+<ol>
+  <li>没有任何CascadeType设置，由测试结果可知，order可以被保存到数据库，但是两个Item却不能。</li>
+  <li>使用<code>CascadeType.PERSIST</code>
+    <ol>
+      <li>单独在Order类的items属性上加入<code>cascade={CascadeType.PERSIST}</code>,使用<strong>代码段1</strong>,order和items都可以被保存到数据库;使用<strong>代码段2</strong>，order和items都<strong>不能</strong>被保存到数据库。</li>
+      <li>单独在Item类的order属性上加入<code>cascade={CascadeType.PERSIST}</code>，使用<strong>代码段1</strong>,order可以被保存到数据库，items不可以被保存到数据库;使用<strong>代码段2</strong>，order和items都可以被保存到数据库。</li>
+      <li>在Order和Item类中都使用<code>cascade={CascadeType.PERSIST}</code>，使用<strong>代码段1</strong>,order和items都可以被保存到数据库;使用<strong>代码段2</strong>，order和items都可以被保存到数据库。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>由此可以知道，在某个类的属性上使用<code>cascade={CascadeType.PERSIST}</code>，对该类进行保存操作时，可以级连保存该类中此属性所对应的对象；而对该类的属性对应的对象进行保存操作时，却不能保存该类（存在外键时，二者都不可保存）。但是如果在该类和该类的属性所对应的类别中同时使用<code>cascade={CascadeType.PERSIST}</code>，那么无论是从该类出发进行保存操作，还是从该类的属性对应的对象出发进行保存操作，都可以保存二者。</p>
+
+<h2 id="cascadetyperemove">场景2，删除数据(<code>CascadeType.REMOVE</code>)</h2>
+
+<p>现在有这样的场景，客户需要删除一个订单,那么订单中的订单项也需要一并删除，为了可以实现级连删除的效果，我们使用以下测试代码：</p>
+
+<pre><code>private Order order;
+private List&lt;Item&gt; items = new ArrayList&lt;Item&gt;();
+
+@Before
+public void setUp(){
+	order = new Order();
+	order.setName("order1");
+	Item item1 = new Item();
+	
+	item1.setName("item1_order1");
+	item1.setOrder(order);
+	
+	Item item2 = new Item();
+	item2.setName("item2_order1");
+	item2.setOrder(order);
+	
+	items.add(item1);
+	items.add(item2);
+	order.setItems(items);
+	
+	orderRepository.save(order);
+	itemRepository.save(items);
+}
+
+@Test
+public void testDelete(){
+	//代码段3
+	orderRepository.delete(order);
+	Assert.assertEquals(0, orderRepository.count());
+	Assert.assertEquals(0, orderRepository.count());
+	
+	//代码段4
+	itemRepository.delete(items);
+	Assert.assertEquals(0, orderRepository.count());
+	Assert.assertEquals(0, itemRepository.count());
+}
+</code></pre>
+
+<p>在该场景中，我们分别测试如下情况：</p>
+
+<ol>
+  <li>在Order和Item中都没有使用<code>CascadeType.REMOVE</code>时，单独删除order对象是不成功的，这是由于数据库在item表中有基于order的外键约束。单独删除items可以成功的。</li>
+  <li>使用<code>CascadeType.REMOVE</code>
+    <ol>
+      <li>在Order类的items属性上使用<code>CascadeType.REMOVE</code>, 使用<strong>代码段3</strong>，通过Order对象的删除操作，可以级连删除order中items的Item对象(在删除过程中，会先删除items，然后再删除order)；但使用<strong>代码段4</strong>，虽然items可以成功删除，但是其关联的order对象却不能级连删除。</li>
+      <li>在Item类的order属性上使用<code>CascadeType.REMOVE</code>, 使用<strong>代码段3</strong>, Order对象的删除操作是失败的，这是因为在存储item的表中有引用order表的外键；但是使用<strong>代码段4</strong>却可以成功的删除items及其级连的order对象。其过程是先更新items中引用的order的外键，设置items对order的引用为空值。然后删除items，然后再删除order~~(注意，如果items为多条，那么会先删除一条item，然后删除order，然后再删除其余的item)~~。</li>
+      <li>在Order和Item中都使用<code>CascadeType.REMOVE</code>时，使用<strong>代码段3</strong>和<strong>代码段4</strong>都可以成功，这表明，在二者都使用<code>CascadeType.REMOVE</code>时，既可以通过删除order，同时级连删除items；也可以通过删除items，同时级连删除order。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>通过以上的分析，可以了解到，在一般的业务场景中，需求基本是在删除order时同时级连删除items，但反过来，在删除items的时候同时也要求删除order却不一定适合业务场景。即使删除了所有和order相关的items，可能也需要保持住那个没有items的order。所以这里的建议是，最好不要在order和item双方中都同时使用<code>CascadeType.REMOVE</code>，即最好不要在关系的维护端(这里指Item类，因为item表中会有order的外键，所以item是关系的维护端)使用<code>CascadeType.REMOVE</code>。</p>
+
+<h2 id="cascadetypemerge">场景3, 更新数据(<code>CascadeType.MERGE</code>)</h2>
+
+<p>在业务上，经常会有这样一种类似的需要：查找到了一个业务实体后，要更新该实体，同时也需要更新该实体所关联的其他业务实体。在我们的例子中就是，同时需要更新Order和其所关联的Item。我们使用如下测试代码：</p>
+
+<pre><code>private Order order;
+private List&lt;Item&gt; items = new ArrayList&lt;Item&gt;();
+
+@Before
+public void setUp(){
+	order = new Order();
+	order.setName("order1");
+	Item item1 = new Item();
+	
+	item1.setName("item1_order1");
+	item1.setOrder(order);
+	
+	Item item2 = new Item();
+	item2.setName("item2_order1");
+	item2.setOrder(order);
+	
+	items.add(item1);
+	items.add(item2);
+	order.setItems(items);
+	
+	orderRepository.save(order);
+	itemRepository.save(items);
+}
+
+
+@Test
+public void testUpdate(){
+	order.setName("order1_updated");
+	
+	items.get(0).setName("item1_order1_updated");
+	items.get(1).setName("item2_order1_updated");
+	
+	//代码段5
+	orderRepository.save(order);
+	Assert.assertEquals(1, orderRepository.count(new Specification&lt;Order&gt;(){
+		public Predicate toPredicate(Root&lt;Order&gt; root, CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "order1_updated");
+		}
+	}));		
+	Assert.assertEquals(1, itemRepository.count(new Specification&lt;Item&gt;() {
+
+		public Predicate toPredicate(Root&lt;Item&gt; root,CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "item1_order1_updated");
+		}
+	}));
+	
+	//代码段6
+	itemRepository.save(items);
+	Assert.assertEquals(1, itemRepository.count(new Specification&lt;Item&gt;() {
+		public Predicate toPredicate(Root&lt;Item&gt; root,CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "item1_order1_updated");
+		}
+	}));
+	Assert.assertEquals(1, orderRepository.count(new Specification&lt;Order&gt;(){
+		public Predicate toPredicate(Root&lt;Order&gt; root, CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "order1_updated");
+		}
+	}));		
+}
+</code></pre>
+
+<p>在该场景中，我们分别测试如下情况：</p>
+
+<ol>
+  <li>在Order和Item中都没有使用<code>CascadeType.MERGE</code>时，使用<strong>代码段5</strong>,其测试结果表明更新Order成功，但是并没有级连更新items；使用<strong>代码段6</strong>,更新items成功，但并没有级连更新items所关联的order对象。</li>
+  <li>使用<code>CascadeType.MERGE</code>
+    <ol>
+      <li>单独在Order的items属性上使用<code>CascadeType.MERGE</code>，使用<strong>代码段5</strong>,其测试结果表明更新order成功，并且级连更新items也成功；使用<strong>代码段6</strong>，其测试结果表明，更新items成功，但是并没有级连更新order。</li>
+      <li>单独在Item的属性order上使用<code>CascadeType.MERGE</code>,使用<strong>代码段5</strong>，其测试结果表明更新items时，可以级连更新其关联的order对象；使用<strong>代码段6</strong>，更新items成功，但是并没有级连更新items关联的order对象。</li>
+      <li>在Order和Item中都使用<code>CascadeType.MERGE</code>时，使用<strong>代码段4</strong>和<strong>代码段5</strong>都可以成功，这表明，在二者都使用<code>CascadeType.MERGE</code>时，既可以通过更新order，同时级连更新items；也可以通过更新items，同时更新order。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>通过以上的分析，可以了解到，通过使用<code>CascadeType.MERGE</code>,可以通过更新关系的一端对象，而同时更新关系令一端的数据。</p>
+
+<h2 id="cascadetyperefresh">场景4，刷新数据(<code>CascadeType.REFRESH</code>)</h2>
+<p>这里刷新数据，是对应在这样的业务场景下：对于业务系统，一半会存在多个用户，如果用户A取得了order和其对应的items，并且对order和items进行了修改，同时用户B也做了如此操作，但是用户B先保存了，然后用户A保存时，需要先刷新order关联的items，然后再把用户A的变更更新到数据库。这中场景就对应了<code>CascadeType.REFRESH</code>的需求。</p>
+
+</section>
+<section class="meta">
+<span class="author">
+  <a href="http://westerly-lzh.github.io">Jeff Lee</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2014-12-10">2014-12-10</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+
+<span class="categories">
+  in categories
+  
+  <a href="http://westerly-lzh.github.io/cn/categories/#jpa" title="jpa">jpa</a>&nbsp;
+  
+</span>
+
+
+<span class="tags">
+  tagged with 
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#JPA" title="JPA">JPA</a>&nbsp;
+  
+  <a href="http://westerly-lzh.github.io/cn/tags/#Cascadetype" title="Cascadetype">Cascadetype</a>&nbsp;
+  
+</span>
+
+</section>
+<section align="right">
+<br/>
+<section class="comment">
+ <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'jeff-lee'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <!--
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    -->
+</section>
+
+
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    if (e.target.nodeName.toUpperCase() != 'BODY') return;
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/11/Using-SSH-In-Windows/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        url = 'http://westerly-lzh.github.io/cn/2014/12/Sparse-Matrix-Storage-Style/';
+        
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+
+
+        </article>
+      </div>
+    </div>
+    <!--
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-1988641-2']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+-->
+  </body>
+</html>

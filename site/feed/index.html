@@ -1,0 +1,1298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+        xmlns:content="http://purl.org/rss/1.0/modules/content/"
+        xmlns:atom="http://www.w3.org/2005/Atom"
+  >
+  <channel>
+    <title>Jeff Lee</title>
+    <atom:link href="http://westerly-lzh.github.io/cn/feed/" rel="self" type="application/rss+xml" />
+    <link>http://jeff-lee.name</link>
+    <lastBuildDate>2015-05-16T18:02:43+08:00</lastBuildDate>
+    <webMaster>westerly.lzh@gmail.com</webMaster>
+    
+    <item>
+      <title>循环取货问题的蚁群算法</title>
+      <link>http://westerly-lzh.github.io/cn/2015/05/ACO-for-VRP/</link>
+      <pubDate>2015-05-17T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2015/05/ACO-for-VRP</guid>
+      <content:encoded><![CDATA[<h2 id="section">引子</h2>
+
+<p>一个朋友在循环取货（Milk-run）问题中需要使用蚁群算法，于是我就特地的找了一篇讨论该问题的论文《一种动态循环取货的入场物流策略及其线路规划研究》，并实现了该文献中讨论的算法。</p>
+
+<h2 id="section-1">数据准备</h2>
+
+<pre><code>Vvv	v00	v01	v02	v03	v04	v05	v06	v07	v08	v09	v010	q	t
+v00	0	28	41	20	41	30	22	50	22	28	31	0	0
+v01	28	0	22	44	60	22	41	60	30	40	58	15	0.6
+v02	41	22	0	50	58	14	60	82	50	36	64	9	0.4
+v03	20	44	50	0	22	36	36	64	41	20	14	12	0.5
+v04	41	60	58	22	0	44	58	86	63	22	22	14	0.6
+v05	30	22	14	36	44	0	50	76	44	22	50	16	0.6
+v06	22	41	60	36	58	50	0	28	14	50	41	8	0.3
+v07	50	60	82	64	86	76	28	0	31	78	67	13	0.5
+v08	22	30	50	41	63	44	14	31	0	50	50	15	0.6
+v09	28	40	36	20	22	22	50	78	50	0	31	7	0.3
+v10	31	58	64	14	22	50	41	67	50	31	0	8	0.3
+</code></pre>
+
+<p>该问题中有十个供应商，分别为v01 ~ v10, v00为配送中心，q为车辆在每个供应商处的载货量（按照体积计算），而t为在该供应商处的集货时间。车辆限制为：车辆最大载货体积为41 $m^3$, 车辆的行驶距离为200km，车速为40，车辆最大行驶时间限制为7小时。</p>
+
+<h2 id="section-2">模型</h2>
+
+<p>假定供应商以$V_i${$i=0,1,2,…,n$}来表示，其中$V_0$代表集货中心，集货中心有$m$辆车，所有车的行驶速度一致，车辆的最大载货量表示为$Q_{max}$，车辆允许的最大行驶时间为$T_{max}$,允许的最大行驶距离为$L_{max}$,车辆的行驶速度为$V$，供应商$V_i$与供应商$V_j$之间的距离用$d_{ij}$,供应商$V_i$到供应商$V_j$需要花费的时间为$\frac{d_{ij}}{V}$,在供应商$V_i$处的集货时间为$t_{ci}$,发送量为$q_i$.</p>
+
+<p>定义：$X_{ijk} =\cases{1&amp;车辆k从供应商V_i行驶到供应商V_j \\0&amp;否则} $,$y_{ik} = \cases{1&amp;供应商V_i由车辆k进行循环取货 \\0&amp;否则}$。则该模型可以表示如下：</p>
+
+<script type="math/tex; mode=display">D = min(\sum_{i=0}^n\sum_{j=0}^n\sum_{k=1}^md_{ij}X_{ijk}) \label{1}</script>
+
+<script type="math/tex; mode=display">\sum_{k=1}^m y_{ik} =1  \quad  i=1,2,...,n \label{2}</script>
+
+<script type="math/tex; mode=display">\sum_{i=0}^n\sum_{k=1}^m X_{ijk} =1  \quad  j=1,2,...,n \label{3}</script>
+
+<script type="math/tex; mode=display">\sum_{j=1}^n\sum_{k=1}^m X_{ijk} =1  \quad  i=1,2,...,n \label{4}</script>
+
+<script type="math/tex; mode=display">\sum_{i=1}^n\sum_{k=1}^m X_{oik} =\sum_{j=1}^n\sum_{k=1}^mX_{jok} \label{5}</script>
+
+<script type="math/tex; mode=display">\sum_{i=1}^ny\_{ik}q_i \le Q_{max} \quad k=1,2,...,m \label{6}</script>
+
+<script type="math/tex; mode=display">\sum_{i=1}^n\sum_{j=1}^nX_{ijk}d_{ij} \le L_{max} \quad k=1,2,...,m \label{7}</script>
+
+<script type="math/tex; mode=display">\sum_{i=0}^n\sum_{j=1}^n X_{ijk}(\frac{d_{ij}}{V}+t_{cj}) \le T_{max} \quad k=1,2,...,m \label{8}</script>
+
+<h2 id="section-3">蚁群算法原理</h2>
+<p>蚂蚁在觅食过程中，在第一次经过一个还没有走过的路径的分叉口时，会随机的挑选其中一条路径前进，并分泌出与路径信息相关的信息素，当后来的蚂蚁再次经过该岔路口时就会通过感知已经经过该路径的蚂蚁遗留下来的信息素，并通过选择信息素浓度较大的路径来完成寻觅工作。这种正向的反馈机制能够有效的引导蚂蚁找到最优路径，因为最优路径上经过的蚂蚁会越来越多，信息量就会越来越大，而由于非最优路径上的信息量会随着时间的流逝而逐渐减少直至消失。</p>
+
+<h2 id="java-">Java 实现</h2>
+
+<p>Ant.java</p>
+
+<pre><code>import java.util.Random;
+import java.util.Vector;
+
+public class Ant implements Cloneable {
+
+	private Vector&lt;Integer&gt; tabu;// 禁忌表
+	private Vector&lt;Integer&gt; allowedCities;// 允许搜索的城市
+	private float[][] delta;// 信息素变化矩阵
+	private float[][] distance;// 距离矩阵
+	
+	private float alpha;//
+	private float beta;//
+	private float lamda;
+	private float omga;
+	
+	private int tourLength;// 路径长度
+	private int cityNum;// 城市数量
+	
+	private int firstCity;// 起始城市
+	private int currentCity;// 当前城市
+	
+	// /Added
+	
+	// private int[] tour;
+	private float[] Q;// 供应商的发送量
+	private float[] T;// 供应商的集货时间
+	private float V; // 车辆速度
+	
+	private float Q\_max;
+	private float L\_max;
+	private float T\_max;
+	
+	private float load\_Q = 0;
+	private float load\_T = 0;
+	private float load\_D = 0;
+	
+	public void resetLoad() {
+		load\_Q = 0.0f;
+		load\_T = 0.0f;
+		load\_D = 0.0f;
+	}
+
+	public boolean selectCityIsOK(int selectCity) {
+		return ((load\_Q + Q[selectCity]) &lt;= Q\_max) &amp;&amp; ((load\_D + distance[tabu.get(tabu.size() - 2)][selectCity]) &lt;= L\_max)
+				&amp;&amp; ((T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V) &lt;= T\_max);
+	}
+	
+	public void updateLoadQ(int selectCity) {
+		load\_Q += load\_Q + Q[selectCity];
+		load\_D += load\_D + distance[tabu.get(tabu.size() - 2)][selectCity];
+		load\_T += load\_T + T[selectCity] + distance[tabu.get(tabu.size() - 2)][selectCity] / V;
+	}
+	
+	public Ant() {
+		cityNum = 30;
+		tourLength = 0;
+		Q = new float[cityNum];
+		T = new float[cityNum];
+		V = 40;
+	
+		Q\_max = 41;
+		L\_max = 200;
+		T\_max = 7.0f;
+	
+	}
+	
+	public Ant(int cityNum, float[] Q, float[] T, float V, float Q\_max, float L\_max, float T\_max) {
+		this.cityNum = cityNum;
+		tourLength = 0;
+		this.Q = Q;
+		this.T = T;
+		this.V = V;
+	
+		this.Q\_max = Q\_max;
+		this.L\_max = L\_max;
+		this.T\_max = T\_max;
+	}
+	
+	/**
+ 	* 初始化蚂蚁，所有蚂蚁必须从配送中心出发，配送中心为0
+ 	* 
+	* @param distance
+ 	* @param alpha
+ 	* @param beta
+ 	*/
+	public void init(float[][] distance, float alpha, float beta, float lamda, float omga) {
+		this.alpha = alpha;
+		this.beta = beta;
+		this.lamda = lamda;
+		this.omga = omga;
+		allowedCities = new Vector&lt;Integer&gt;();
+		tabu = new Vector&lt;Integer&gt;();
+		this.distance = distance;
+		this.delta = new float[cityNum][cityNum];
+		for (int i = 0; i &lt; cityNum; i++) {
+			allowedCities.add(new Integer(i));
+			for (int j = 0; j &lt; cityNum; j++) {
+				this.delta[i][j] = 0.0f;
+			}
+		}
+		// -------------BEGIN
+		// 蚂蚁随机选择初始化的城市 FIXME，新应用中应当使蚂蚁从配送中心出发
+		// Random random = new Random(System.currentTimeMillis());
+		// firstCity = random.nextInt(cityNum);
+		firstCity = 0;
+		// --------------END
+		for (Integer i : allowedCities) {
+			if (i.intValue() == firstCity) {
+				allowedCities.remove(i);
+				break;
+			}
+		}
+		tabu.add(Integer.valueOf(firstCity));
+		currentCity = firstCity;
+		resetLoad();
+	}
+
+	/**
+	* 选择下一个城市
+ 	* 
+ 	* @param pheromone
+ 	*            信息素
+ 	*/
+	public int selectNextCity(float[][] pheromone) {
+		double[] p = new double[cityNum];
+		double sum = 0.0f;
+		// 计算分母部分
+		for (Integer i : allowedCities) {
+			sum += Math.pow(pheromone[currentCity][i.intValue()], alpha) * Math.pow(1.0 / distance[currentCity][i.intValue()], beta)
+					* Math.pow((load\_Q + Q[i.intValue()]) / Q\_max, lamda)
+					* Math.pow((L\_max / (load\_D + distance[currentCity][i.intValue()] + distance[i.intValue()][0])), omga);
+		}
+		// 计算概率矩阵
+		for (int i = 0; i &lt; cityNum; i++) {
+			boolean flag = false;
+			for (Integer j : allowedCities) {
+				if (i == j.intValue()) {
+					p[i] = (Math.pow(pheromone[currentCity][i], alpha) * Math.pow(1.0 / distance[currentCity][i], beta)
+							* Math.pow((load\_Q + Q[j.intValue()]) / Q\_max, lamda) * Math.pow(
+							(L\_max / (load\_D + distance[currentCity][j.intValue()] + distance[j.intValue()][0])), omga))
+							/ sum;
+					flag = true;
+					break;
+				}
+			}
+			if (!flag) {
+				p[i] = 0.0f;
+			}
+		}
+		// 轮盘赌选择下一个城市
+		Random random = new Random(System.currentTimeMillis());
+		float selectP = random.nextFloat();
+		int selectCity = 0;
+		float sum1 = 0.0f;
+		for (int i = 0; i &lt; cityNum; i++) {
+			sum1 += p[i];
+			if (sum1 &gt; selectP) {
+				selectCity = i;
+				break;
+			}
+		}
+		// 从允许的城市中去掉selectCity
+		for (Integer i : allowedCities) {
+			if (i.intValue() == selectCity) {
+				allowedCities.remove(i);
+				break;
+			}
+		}
+	
+		// 在禁忌表中添加selectCity
+		tabu.add(Integer.valueOf(selectCity));
+		// 将当前城市改为选择城市
+		currentCity = selectCity;
+		return selectCity;
+	}
+	
+	public int calculateTourLength() {
+		int len = 0;
+		for (int i = 0; i &lt; tabu.size() - 1; i++) {
+			len += distance[this.tabu.get(i).intValue()][this.tabu.get(i + 1).intValue()];
+		}
+		return len;
+	}
+}
+</code></pre>
+
+<p>ACO.java</p>
+
+<pre><code>import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Vector;
+import java.util.function.Consumer;
+
+public class ACO {
+
+	private Ant[] ants;
+	private int antNum;
+	private int cityNum;
+	private int MAX\_GEN;
+	private float[][] pheromone;
+	private float[][] distance;
+	private float bestLength;
+
+	private float alpha;
+	private float beta;
+	private float lamda;
+	private float omga;
+	private float rho;
+
+	private float[] Q;// 供应商的发送量
+	private float[] T;// 供应商的集货时间
+	private float V = 40; // 车辆速度
+
+	private float Q\_max = 41;
+	private float L\_max = 200;
+	private float T\_max = 7.0f;
+
+	public ACO() {
+
+	}
+
+	public ACO(int antNum, int max\_Gen, float alpha, float beta, float lamda, float omga, float rho) {
+		this.antNum = antNum;
+		this.MAX\_GEN = max\_Gen;
+		this.ants = new Ant[antNum];
+		this.alpha = alpha;
+		this.beta = beta;
+		this.lamda = lamda;
+		this.omga = omga;
+		this.rho = rho;
+	}
+
+	private float[] parseFloat(String[] sigs) {
+		float[] res = new float[sigs.length];
+		for (int i = 0; i &lt; sigs.length; i++) {
+			res[i] = Float.valueOf(sigs[i]);
+		}
+		return res;
+	}
+
+	public void init(String fileName) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
+		String buff;
+		buff = reader.readLine();
+		String[] segments = buff.split("	");
+		cityNum = segments.length - 3;
+		distance = new float[cityNum][cityNum];
+		Q = new float[cityNum];
+		T = new float[cityNum];
+		
+		for (int i = 0; i &lt; cityNum; i++) {
+			buff = reader.readLine();
+			segments = buff.split("	");
+			distance[i] = parseFloat(Arrays.copyOfRange(segments, 1, 12));
+			Q[i] = Integer.valueOf(segments[segments.length - 2]);
+			T[i] = Float.valueOf(segments[segments.length - 1]);
+		}
+		// 初始化信息素
+		pheromone = new float[cityNum][cityNum];
+		for (int i = 0; i &lt; cityNum; i++) {
+			for (int j = 0; j &lt; cityNum; j++) {
+				pheromone[i][j] = 0.1f;
+			}
+		}
+	
+		bestLength = Integer.MAX\_VALUE;
+	
+		// 随机放置蚂蚁
+		for (int i = 0; i &lt; antNum; i++) {
+			ants[i] = new Ant(cityNum, Q, T, V, Q\_max, L\_max, T\_max);
+			ants[i].init(distance, alpha, beta, lamda, omga);
+		}
+		reader.close();
+	}
+	
+	public class Wrap{
+		public int gen;
+	}
+
+	public void solve() {
+		final Wrap wrap = new Wrap();
+		for (int g = 0; g &lt; MAX\_GEN; g++) {
+			//----------JAVA\_8 BEGIN
+			wrap.gen = g;
+			Arrays.asList(ants).parallelStream().forEach(new Consumer&lt;Ant&gt;() {
+			
+				public void accept(Ant ant) {
+				
+					for (int j = 1; j &lt; cityNum; j++) {
+						if (!ant.getAllowedCities().isEmpty()) {
+							int selectCity = ant.selectNextCity(pheromone);// FIXME
+																					// 需要修改的地方
+							if (ant.selectCityIsOK(selectCity)) {
+								ant.updateLoadQ(selectCity);
+							} else {
+								if (ant.getTabu().lastElement() != ant.getFirstCity()) {
+									ant.getTabu().add(ant.getFirstCity());
+								}
+								j = j - 1;
+								ant.resetLoad();
+							}
+						}
+					}
+					if (ant.getTabu().lastElement() != ant.getFirstCity()) {
+						ant.getTabu().add(ant.getFirstCity());
+					}
+					if (ant.getTourLength() &lt; bestLength) {
+						bestLength = ant.getTourLength();
+						printOptimal(ant, wrap.gen);
+					}
+					for (int j = 0; j &lt; cityNum; j++) {
+						ant.getDelta()[ant.getTabu().get(j).intValue()][ant.getTabu().get(j + 1).intValue()] = (float) (1.0f / ant
+								.getTourLength());
+						ant.getDelta()[ant.getTabu().get(j + 1).intValue()][ant.getTabu().get(j).intValue()] = (float) (1.0f / ant
+								.getTourLength());
+					}
+				}
+			});
+			//--------JAVA-8 END
+			
+			// -------JAVA-7 BEGIN
+//			for (int i = 0; i &lt; antNum; i++) {
+//				// ants[i].resetLoad();
+//				for (int j = 1; j &lt; cityNum; j++) {
+//					if (!ants[i].getAllowedCities().isEmpty()) {
+//						int selectCity = ants[i].selectNextCity(pheromone);// FIXME
+//																			// 需要修改的地方
+//						if (ants[i].selectCityIsOK(selectCity)) {
+//							ants[i].updateLoadQ(selectCity);
+//						} else {
+//							if (ants[i].getTabu().lastElement() != ants[i].getFirstCity()) {
+//								ants[i].getTabu().add(ants[i].getFirstCity());
+//							}
+//							j = j - 1;
+//							ants[i].resetLoad();
+//						}
+//					}
+//				}
+//				if (ants[i].getTabu().lastElement() != ants[i].getFirstCity()) {
+//					ants[i].getTabu().add(ants[i].getFirstCity());
+//				}
+////				print(ants[i],g);
+//				if (ants[i].getTourLength() &lt; bestLength) {
+//					bestLength = ants[i].getTourLength();
+//					printOptimal(ants[i], g);
+//				}
+//				for (int j = 0; j &lt; cityNum; j++) {
+//					ants[i].getDelta()[ants[i].getTabu().get(j).intValue()][ants[i].getTabu().get(j + 1).intValue()] = (float) (1.0f / ants[i]
+//							.getTourLength());
+//					ants[i].getDelta()[ants[i].getTabu().get(j + 1).intValue()][ants[i].getTabu().get(j).intValue()] = (float) (1.0f / ants[i]
+//							.getTourLength());
+//				}
+//			}
+			//-------JAVA-7 END
+
+			// 更新信息素
+			updatePheromone();
+
+			// 重新初始化蚂蚁
+			for (int i = 0; i &lt; antNum; i++) {
+				ants[i].init(distance, alpha, beta, lamda, omga);
+			}
+		}
+
+	}
+
+	private void updatePheromone() {
+		// 信息素挥发
+		for (int i = 0; i &lt; cityNum; i++) {
+			for (int j = 0; j &lt; cityNum; j++) {
+				pheromone[i][j] = pheromone[i][j] * (1 - rho);
+			}
+		}
+	
+		// 信息素更新
+		for (int i = 0; i &lt; cityNum; i++) {
+			for (int j = 0; j &lt; cityNum; j++) {
+				for (int k = 0; k &lt; antNum; k++) {
+					pheromone[i][j] += ants[k].getDelta()[i][j];
+		
+				}
+			}
+		}
+	}
+
+	private void printOptimal(Ant ant, int gen) {
+		System.out.println("第" + gen + "代发现新解:" + ant.calculateTourLength() + ",路线为:");
+		Vector&lt;Integer&gt; tour = new Vector&lt;Integer&gt;();
+		for (Integer m : ant.getTabu()) {
+			if (m.intValue() != 0) {
+				tour.add(m);
+			} else {
+				if (tour.size() &gt; 0) {
+					System.out.print("0 ");
+					for (Integer n : tour) {
+						System.out.print(n + " ");
+					}
+					System.out.println("0");
+					tour.clear();
+				}
+			}
+		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		ACO aco = new ACO(60, 10000, 1.0f, 2.0f, 0.4f, 0.6f, 0.15f);
+		aco.init("/Users/jeff/Documents/Eworkspace/AL\_DEMOS/src/ant/data.dat");
+		aco.solve();
+	}
+
+}
+</code></pre>
+
+<h2 id="note">Note</h2>
+
+<p>需要注意的是，蚁群算法并不能每次都取得最优解。</p>
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>稀疏矩阵存储列式和行式</title>
+      <link>http://westerly-lzh.github.io/cn/2014/12/Sparse-Matrix-Storage-Style/</link>
+      <pubDate>2014-12-28T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/12/Sparse-Matrix-Storage-Style</guid>
+      <content:encoded><![CDATA[<h2 id="section">引子</h2>
+
+<p>在看Gurobi优化器文档时，其GRBloadmodel方法中说约束矩阵的非零值是以压缩稀疏列（Compressed Sparse Column，CSC）的方式存储的。但是并不是很清楚什么才是压缩稀疏列，于是baidu了下系数矩阵存储方式，记录如下。在下面的稀疏矩阵表示方式中，都以下面的矩阵为例子。</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{vmatrix}
+10 & 0 & 0 & 0 & -2 & 0  \\\
+3  & 9 & 0 & 0 &  0 & 3  \\\
+0  & 7 & 8 & 7 &  0 & 0  \\\
+3  & 0 & 0 & 0 &  5 & 0  \\\
+0  & 8 & 0 & 9 &  9 & 0  \\\
+0  & 4 & 0 & 0 &  2 & -1 
+\end{vmatrix} %]]></script>
+
+<h2 id="section-1">三元组</h2>
+<p>(row_index,col_index,value)</p>
+
+<pre><code>按行存储
+[(1,1,10),(1,5,-2),			//第1行
+(2,1,3), (2,2,9),(2,6,3),	//第2行
+(3,2,7),(3,3,8),(3,4,7),	//第3行
+(4,1,3),(4,5,5),			//第4行
+(5,2,8),(5,4,9),(5,5,9),	//第5行
+(6,2,4),(6,5,2),(6,6,-1)]	//第6行
+ 	 
+按列存储
+[(1,1,10),(2,1,3),(4,1,3),			//第1列
+(2,2,9),(3,2,7),(5,2,8),(6,2,4),	//第2列
+(3,3,8),							//第3列
+(3,4,7),(5,4,9),					//第4列
+(1,5,-2),(4,5,5),(5,5,9),(6,5,2),	//第5列
+(2,6,3),(6,6,-1)]					//第6列
+</code></pre>
+
+<h2 id="compressed-sparse-row">压缩稀疏行（Compressed Sparse Row）</h2>
+
+<p>value[]:按照行的顺序，依次为非零元素的值</p>
+
+<p>col_index[]：按照列的下标计数，依次标记每个非零元素所在的列的下标</p>
+
+<p>row_ptr[]：对col_index中的元素下标进行计数，row_ptr中的下标表示列数，存储的值为当前列中非零值在row_index中第一次出现的位置。</p>
+
+<pre><code>index     = [1,  2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14, 15,16] //数组下标
+value     = [10,-2, 3, 9, 3, 7, 8, 7, 3, 5,  8, 9, 9, 4, 2, -1] //按行读取时，依次出现的非零值
+col_index = [1,  5, 1, 2, 6, 2, 3, 4, 1, 5,  2, 4, 5, 2, 6,  6] //按行读取时，依次出现非零值所在的列下标
+row_ptr   = [1,  3, 6, 9,11,14] //按行读取时，每一行中第一个出现的非零值在value数组中的下标值,可以参考三元组中按行存储。
+</code></pre>
+
+<p>稀疏矩阵的压缩稀疏行式存储中需要存储的为value,col_index,row_ptr三个数组。</p>
+
+<h2 id="compressed-sparse-column">压缩稀疏列（Compressed Sparse Column）</h2>
+
+<p>value[]:按照列的顺序，依次为非零元素的值</p>
+
+<p>row_index[]：按照行的下标计数，依次标记每个非零元素所在的行的下标</p>
+
+<p>col_ptr[]：对row_index中的元素下标进行计数，col_ptr中得下标表示列数，存储的值为当前列中非零值在row_index中第一次出现的位置。</p>
+
+<pre><code>index     = [1,  2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14, 15,16] //数组下标
+value     = [10, 3, 3, 9, 7, 8, 4, 8, 7, 9, -2, 5, 9, 2, 3, -1] //按列读取时，依次出现的非零值
+row_index = [1,  2, 4, 2, 3, 5, 6, 3, 3, 5,  1, 4, 5, 6, 2,  6] //案列读取时，依次出现非零值所在的行下标
+col_ptr   = [1,  4, 8, 9,11,15] //按列读取时，每一列中第一个出现的非零值在value数组中的下标值,可以参考三元组中按列存储。
+</code></pre>
+
+<p>稀疏矩阵的压缩稀疏列式存储中需要存储的为value，row_index,col_ptr三个数组。</p>
+
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>Jpa CascadeType 详解</title>
+      <link>http://westerly-lzh.github.io/cn/2014/12/JPA-CascadeType-Explaining/</link>
+      <pubDate>2014-12-10T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/12/JPA-CascadeType-Explaining</guid>
+      <content:encoded><![CDATA[<h2 id="background">Background</h2>
+
+<p>网上关于JPA的CascadeType讲解很多，但几乎都说的很模糊.本文试图使用一个具体的例子来说明CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE, CascadeType.ALL 具体区别。</p>
+
+<p>首先，我们使用一个订单和订单项的例子。该例子在网络上那些介绍JPA CascadeType用法的文章钟广为流传。</p>
+
+<pre><code>/**
+ * 订单
+ */
+@Entity
+@Table(name="t_order")
+public class Order {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	@Column
+	private String name;
+	@OneToMany(mappedBy="order",targetEntity=Item.class,fetch=FetchType.LAZY)
+	private List&lt;Item&gt; items;
+｝
+
+/**
+ *订单项
+ */
+@Entity
+@Table(name="t_item")
+public class Item {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	@Column
+	private String name;
+	@ManyToOne(fetch=FetchType.LAZY,targetEntity=Order.class)
+	@JoinColumn(name="order_id")
+	private Order order;
+｝
+
+/** Order Repository */
+public interface OrderRepository extends JpaRepository&lt;Order, Integer&gt;,
+	JpaSpecificationExecutor&lt;Order&gt; {
+
+}
+
+/** Item Repository */
+public interface ItemRepository extends JpaRepository&lt;Item, Integer&gt;,
+	JpaSpecificationExecutor&lt;Item&gt; {
+
+}
+</code></pre>
+
+<h2 id="cascadetypepersist">场景1，新增~~(保存)~~数据(<code>CascadeType.PERSIST</code>)</h2>
+
+<p>客户每次下完订单后，需要保存Order，但是订单里含有Item，因此，在保存Order时候，Order相关联的Item也需要保存。采用上面的模型，使用如下的测试代码：</p>
+
+<pre><code>@Test
+public void addTest(){
+	Order order = new Order();
+	order.setName("order1");
+	
+	Item item1 = new Item();
+	item1.setName("item1_order1");
+	item1.setOrder(order);
+	
+	Item item2 = new Item();
+	item2.setName("item2_order1");
+	item2.setOrder(order);
+	
+	List&lt;Item&gt; items = new ArrayList&lt;Item&gt;();
+	items.add(item1);
+	items.add(item2);
+	order.setItems(items);
+	
+	orderRepository.save(order);	
+	Assert.assertEquals(1,orderRepository.count());
+	Assert.assertEquals(2,itemRepository.count());
+	
+	//代码段1
+	itemRepository.save(order);	
+	Assert.assertEquals(1,orderRepository.count());
+	Assert.assertEquals(2,itemRepository.count());
+	
+	//代码段2
+	//itemRepository.save(items);
+	//Assert.assertEquals(1,orderRepository.count());
+	//Assert.assertEquals(2,itemRepository.count());
+}
+</code></pre>
+
+<p>在该场景中，我们分别测试如下情况：</p>
+
+<ol>
+  <li>没有任何CascadeType设置，由测试结果可知，order可以被保存到数据库，但是两个Item却不能。</li>
+  <li>使用<code>CascadeType.PERSIST</code>
+    <ol>
+      <li>单独在Order类的items属性上加入<code>cascade={CascadeType.PERSIST}</code>,使用<strong>代码段1</strong>,order和items都可以被保存到数据库;使用<strong>代码段2</strong>，order和items都<strong>不能</strong>被保存到数据库。</li>
+      <li>单独在Item类的order属性上加入<code>cascade={CascadeType.PERSIST}</code>，使用<strong>代码段1</strong>,order可以被保存到数据库，items不可以被保存到数据库;使用<strong>代码段2</strong>，order和items都可以被保存到数据库。</li>
+      <li>在Order和Item类中都使用<code>cascade={CascadeType.PERSIST}</code>，使用<strong>代码段1</strong>,order和items都可以被保存到数据库;使用<strong>代码段2</strong>，order和items都可以被保存到数据库。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>由此可以知道，在某个类的属性上使用<code>cascade={CascadeType.PERSIST}</code>，对该类进行保存操作时，可以级连保存该类中此属性所对应的对象；而对该类的属性对应的对象进行保存操作时，却不能保存该类（存在外键时，二者都不可保存）。但是如果在该类和该类的属性所对应的类别中同时使用<code>cascade={CascadeType.PERSIST}</code>，那么无论是从该类出发进行保存操作，还是从该类的属性对应的对象出发进行保存操作，都可以保存二者。</p>
+
+<h2 id="cascadetyperemove">场景2，删除数据(<code>CascadeType.REMOVE</code>)</h2>
+
+<p>现在有这样的场景，客户需要删除一个订单,那么订单中的订单项也需要一并删除，为了可以实现级连删除的效果，我们使用以下测试代码：</p>
+
+<pre><code>private Order order;
+private List&lt;Item&gt; items = new ArrayList&lt;Item&gt;();
+
+@Before
+public void setUp(){
+	order = new Order();
+	order.setName("order1");
+	Item item1 = new Item();
+	
+	item1.setName("item1_order1");
+	item1.setOrder(order);
+	
+	Item item2 = new Item();
+	item2.setName("item2_order1");
+	item2.setOrder(order);
+	
+	items.add(item1);
+	items.add(item2);
+	order.setItems(items);
+	
+	orderRepository.save(order);
+	itemRepository.save(items);
+}
+
+@Test
+public void testDelete(){
+	//代码段3
+	orderRepository.delete(order);
+	Assert.assertEquals(0, orderRepository.count());
+	Assert.assertEquals(0, orderRepository.count());
+	
+	//代码段4
+	itemRepository.delete(items);
+	Assert.assertEquals(0, orderRepository.count());
+	Assert.assertEquals(0, itemRepository.count());
+}
+</code></pre>
+
+<p>在该场景中，我们分别测试如下情况：</p>
+
+<ol>
+  <li>在Order和Item中都没有使用<code>CascadeType.REMOVE</code>时，单独删除order对象是不成功的，这是由于数据库在item表中有基于order的外键约束。单独删除items可以成功的。</li>
+  <li>使用<code>CascadeType.REMOVE</code>
+    <ol>
+      <li>在Order类的items属性上使用<code>CascadeType.REMOVE</code>, 使用<strong>代码段3</strong>，通过Order对象的删除操作，可以级连删除order中items的Item对象(在删除过程中，会先删除items，然后再删除order)；但使用<strong>代码段4</strong>，虽然items可以成功删除，但是其关联的order对象却不能级连删除。</li>
+      <li>在Item类的order属性上使用<code>CascadeType.REMOVE</code>, 使用<strong>代码段3</strong>, Order对象的删除操作是失败的，这是因为在存储item的表中有引用order表的外键；但是使用<strong>代码段4</strong>却可以成功的删除items及其级连的order对象。其过程是先更新items中引用的order的外键，设置items对order的引用为空值。然后删除items，然后再删除order~~(注意，如果items为多条，那么会先删除一条item，然后删除order，然后再删除其余的item)~~。</li>
+      <li>在Order和Item中都使用<code>CascadeType.REMOVE</code>时，使用<strong>代码段3</strong>和<strong>代码段4</strong>都可以成功，这表明，在二者都使用<code>CascadeType.REMOVE</code>时，既可以通过删除order，同时级连删除items；也可以通过删除items，同时级连删除order。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>通过以上的分析，可以了解到，在一般的业务场景中，需求基本是在删除order时同时级连删除items，但反过来，在删除items的时候同时也要求删除order却不一定适合业务场景。即使删除了所有和order相关的items，可能也需要保持住那个没有items的order。所以这里的建议是，最好不要在order和item双方中都同时使用<code>CascadeType.REMOVE</code>，即最好不要在关系的维护端(这里指Item类，因为item表中会有order的外键，所以item是关系的维护端)使用<code>CascadeType.REMOVE</code>。</p>
+
+<h2 id="cascadetypemerge">场景3, 更新数据(<code>CascadeType.MERGE</code>)</h2>
+
+<p>在业务上，经常会有这样一种类似的需要：查找到了一个业务实体后，要更新该实体，同时也需要更新该实体所关联的其他业务实体。在我们的例子中就是，同时需要更新Order和其所关联的Item。我们使用如下测试代码：</p>
+
+<pre><code>private Order order;
+private List&lt;Item&gt; items = new ArrayList&lt;Item&gt;();
+
+@Before
+public void setUp(){
+	order = new Order();
+	order.setName("order1");
+	Item item1 = new Item();
+	
+	item1.setName("item1_order1");
+	item1.setOrder(order);
+	
+	Item item2 = new Item();
+	item2.setName("item2_order1");
+	item2.setOrder(order);
+	
+	items.add(item1);
+	items.add(item2);
+	order.setItems(items);
+	
+	orderRepository.save(order);
+	itemRepository.save(items);
+}
+
+
+@Test
+public void testUpdate(){
+	order.setName("order1_updated");
+	
+	items.get(0).setName("item1_order1_updated");
+	items.get(1).setName("item2_order1_updated");
+	
+	//代码段5
+	orderRepository.save(order);
+	Assert.assertEquals(1, orderRepository.count(new Specification&lt;Order&gt;(){
+		public Predicate toPredicate(Root&lt;Order&gt; root, CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "order1_updated");
+		}
+	}));		
+	Assert.assertEquals(1, itemRepository.count(new Specification&lt;Item&gt;() {
+
+		public Predicate toPredicate(Root&lt;Item&gt; root,CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "item1_order1_updated");
+		}
+	}));
+	
+	//代码段6
+	itemRepository.save(items);
+	Assert.assertEquals(1, itemRepository.count(new Specification&lt;Item&gt;() {
+		public Predicate toPredicate(Root&lt;Item&gt; root,CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "item1_order1_updated");
+		}
+	}));
+	Assert.assertEquals(1, orderRepository.count(new Specification&lt;Order&gt;(){
+		public Predicate toPredicate(Root&lt;Order&gt; root, CriteriaQuery&lt;?&gt; cq, CriteriaBuilder cb) {
+			return cb.equal(root.get("name").as(String.class), "order1_updated");
+		}
+	}));		
+}
+</code></pre>
+
+<p>在该场景中，我们分别测试如下情况：</p>
+
+<ol>
+  <li>在Order和Item中都没有使用<code>CascadeType.MERGE</code>时，使用<strong>代码段5</strong>,其测试结果表明更新Order成功，但是并没有级连更新items；使用<strong>代码段6</strong>,更新items成功，但并没有级连更新items所关联的order对象。</li>
+  <li>使用<code>CascadeType.MERGE</code>
+    <ol>
+      <li>单独在Order的items属性上使用<code>CascadeType.MERGE</code>，使用<strong>代码段5</strong>,其测试结果表明更新order成功，并且级连更新items也成功；使用<strong>代码段6</strong>，其测试结果表明，更新items成功，但是并没有级连更新order。</li>
+      <li>单独在Item的属性order上使用<code>CascadeType.MERGE</code>,使用<strong>代码段5</strong>，其测试结果表明更新items时，可以级连更新其关联的order对象；使用<strong>代码段6</strong>，更新items成功，但是并没有级连更新items关联的order对象。</li>
+      <li>在Order和Item中都使用<code>CascadeType.MERGE</code>时，使用<strong>代码段4</strong>和<strong>代码段5</strong>都可以成功，这表明，在二者都使用<code>CascadeType.MERGE</code>时，既可以通过更新order，同时级连更新items；也可以通过更新items，同时更新order。</li>
+    </ol>
+  </li>
+</ol>
+
+<p>通过以上的分析，可以了解到，通过使用<code>CascadeType.MERGE</code>,可以通过更新关系的一端对象，而同时更新关系令一端的数据。</p>
+
+<h2 id="cascadetyperefresh">场景4，刷新数据(<code>CascadeType.REFRESH</code>)</h2>
+<p>这里刷新数据，是对应在这样的业务场景下：对于业务系统，一半会存在多个用户，如果用户A取得了order和其对应的items，并且对order和items进行了修改，同时用户B也做了如此操作，但是用户B先保存了，然后用户A保存时，需要先刷新order关联的items，然后再把用户A的变更更新到数据库。这中场景就对应了<code>CascadeType.REFRESH</code>的需求。</p>
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>Windows2008 开启 SSH</title>
+      <link>http://westerly-lzh.github.io/cn/2014/11/Using-SSH-In-Windows/</link>
+      <pubDate>2014-11-09T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/11/Using-SSH-In-Windows</guid>
+      <content:encoded><![CDATA[<h2 id="section">问题情境描述</h2>
+<p>我由一个远程的VMware的虚拟机，该虚拟机具有独立的IP地址，通过本地的vSphere Client进行连接。并且该虚拟机处于一个巨大的局域网内部，而且该虚拟机不能连接到外网。本地的vSphere Client可以ping通该虚拟机，但不是处于相同的局域网段。于是我需要一个服务来支持本地到该虚拟机的文件共享。</p>
+
+<h2 id="section-1">方案</h2>
+<p>我在该虚拟机上初始安装时拷贝了一个freeSSHd的软件来支持ssh服务。只需要在该服务器上安装该软件，适当的配置就可以使得该服务器支持ssh，sftp等服务。</p>
+
+<h2 id="scp">为什么scp不行</h2>
+<p>但是我在虚拟机上安装好freeSSHd后，虽然可以ssh到该虚拟机上，但是scp命令却不能连接到该虚拟机。Stack Overflow给出的解释是：</p>
+
+<blockquote>
+  <p>scp, as many other things, is two-side protocol. It requires scp to be present on both client and server. When you issue copy command, ssh connects to given server and spawns scp process, which your local scp then communicates with. In your case, there is no scp on server, so no communication possible.</p>
+</blockquote>
+
+<p>参见<a href="http://stackoverflow.com/questions/22624881/freesshd-cannot-be-accessed-by-scp">freeSSHD cannot be accessed by scp</a> .</p>
+
+<h2 id="sftp">开启SFTP服务</h2>
+
+<p>由于再次通过usb等方式拷贝到虚拟机软件已经不现实了（代价比较高），所以只能放弃scp的使用，转而使用sftp。sftp的开启在freeSSHd上非常简单。</p>
+
+<p><strong>注意：</strong> 在每次更改freeSSHd时，我的体验是仅仅通过退出并重freeSSHd服务是不可以的。所以，我只好每次重启虚拟机。</p>
+
+<h2 id="winscp">客户端使用WinScp</h2>
+
+<p>WinScp客户端软件内置了支持sftp，所以只要配置下，就可以连接到虚拟机的sftp服务器上了。</p>
+
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>JavaScript打印局部页面</title>
+      <link>http://westerly-lzh.github.io/cn/2014/10/JavaScript-Print-Part-Page/</link>
+      <pubDate>2014-10-14T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/10/JavaScript-Print-Part-Page</guid>
+      <content:encoded><![CDATA[<p>虽然浏览器提供了打印页面功能，但有时候需要打印页面上的局部内容。有些浏览器也提供了打印页面选中部分的功能，但仍会在打印出来的页面上把未选中部分所占的空白留出。所以如果有一种方式可以只打印选中的部分，而且以占满纸张的方式打印，那将会非常符合需求。下面的代码就完成了这样的功能。</p>
+
+<pre><code>&lt;script type="text/javascript"&gt;
+	function Printpart(idstr){
+   			var el = document.getElementById(idstr);
+   			var iframe = document.createElement('IFRAME');
+   			var doc = null;
+   			iframe.setAttribute('style', 'position:absolute;width:0px;height:0px;left:-500px;top:-500px;');
+   			document.body.appendChild(iframe);
+   			doc = iframe.contentWindow.document;
+   			doc.write('&lt;div&gt;' + el.innerHTML + '&lt;/div&gt;');
+   			doc.close();
+   			iframe.contentWindow.focus();
+   			iframe.contentWindow.print();
+   			if (navigator.userAgent.indexOf("MSIE") &gt; 0){
+    		document.body.removeChild(iframe);
+   			}
+	}
+	Printpart("div_needed_to_print")
+&lt;/script&gt;
+</code></pre>
+
+<p>只需要把页面保存到本地，然后使用文本编辑器打开保存的页面，把这部分代码粘贴到页面的最后面，并把 <strong>div_needed_to_print</strong>  替换为需要打印部分的div的id即可。</p>
+
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>google被封，网页加载慢</title>
+      <link>http://westerly-lzh.github.io/cn/2014/09/Block-Fonts-GoogleApis/</link>
+      <pubDate>2014-09-28T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/09/Block-Fonts-GoogleApis</guid>
+      <content:encoded><![CDATA[<p>自从gongle被封后，网站加载网页特别的慢，尤其是国外的网站，在浏览器的左下角，可以看到“正在传输来自fonts.googleapis.com”的提示。究其原因是因为这些网站中可能使用了google字体fonts.googleapis.com</p>
+
+<p>下面如果使用提供一种火狐浏览器端的设置方式，可以秒开那些加载有google提供api的站点。只要安装个Adblock Plus的火狐插件，然后自定义过滤规则，添加进fonts.googleapis.com这个站点即可。
+<img src="/media/img/googleapis.png" alt="fonts.googleapis.com" title="adblock plus" /></p>
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>FreeBSD--Jail初探</title>
+      <link>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-Jail-Try/</link>
+      <pubDate>2014-07-27T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-Jail-Try</guid>
+      <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+
+<p>随着计算机硬件的发展，很多的电脑（服务器和个人PC）的利用率普遍偏低，虚拟化的出现为充分利用机器提供了一种契机。FreeBSD在4时代引进的jail虽然是是作为一种安全机制开始其在FreeBSD中得生命，但随着计算机软硬件的发展，jail逐步演化成为一种虚拟化解决方案。但正如在<a href="http://jeff-lee.name/cn/2014/07/FreeBSD-Jail/">FreeBSD Jail</a>中所指出的，Jail是一种<code>operating system level virtualization</code>，这与VMWare级别的虚拟化方案是不同的。Jail的虚拟化方案更显得轻盈，但由于没有虚拟出完整的硬件平台，其应用可能也比较受限。</p>
+
+<h2 id="preparation">Preparation</h2>
+
+<p>如果需要在FreeBSD中使用Jail进行虚拟化，需要考虑下面一些基本的问题，需要多少虚拟化系统，需要部署的应用适不适合在虚拟化系统上运行，宿主机器在性能上能否有效支撑这些系统，每个虚拟化系统将会有多大，将虚拟化系统安装在哪些目录比较合适等基本问题。考虑好这些问题后，就可以创建虚拟化目录了。下面使用一个简单地test例子来演示jail的过程及其一些基本配置：</p>
+
+<pre><code>mkdir -p /usr/jails/test  	##首先创建该test虚拟机的目录
+cd /usr/src   				## 切换到src目录，需要确保src目录下有构建系统的源码，如果没有需要从安装光盘中把这些源码文件安装进宿主机器。
+make buildworld				## 构建系统，需要较长时间。
+make installworld DESTDIR=/usr/jails/test	##把构建好的系统安装到指定的虚拟器位置
+make distribution DESTDIR=/usr/jails/test  ## 把宿主机器中得配置文件配置到虚拟机器上
+mount -t devfs devfs /usr/jails/test/dev ## 不是必须得，每个系统都需要一个device去读写。
+</code></pre>
+
+<p>到此，一个基本的Jail系统就完成了。</p>
+
+<h2 id="jail-commands">Jail Commands</h2>
+<p>FreeBSD提供了一下三个命令来进行Jail的管理。</p>
+
+<ul>
+  <li>jail ：创建，修改，移除已经存在的jail虚拟机</li>
+  <li>jls：列出宿主机器中当前已有的jail虚拟机</li>
+  <li>jexec：在指定的虚拟机中执行命令</li>
+</ul>
+
+<h2 id="basic-configuration">Basic Configuration</h2>
+<p>虽然创建了jail虚拟机，但是还需要一定的配置才能让虚拟机正常运行，需要在宿主机器的/etc/rc.conf中配置：</p>
+
+<pre><code>jail_enable="YES"  ## 允许jail虚拟机在宿主系统启动时一并启动
+jail_list="test" ## 当有多个虚拟机时，使用空格分割
+</code></pre>
+
+<p>对于jail_list中得每个虚拟机需要配置：</p>
+
+<pre><code>jail_test_rootdir="/usr/jails/test" ## 配置test虚拟机的根目录
+jail_test_hostname="www.test.org"	## 配置tset虚拟机的hostname
+jail_test_ip = "10.211.55.6" 		## 配置test虚拟机的ip
+jail_test_devfs_enable="YES"		## 配置test虚拟机可以挂接devfs
+ifconfig_em0_alias0="inet 10.211.55.6 netmask 255.255.255.0" ##配置虚拟机ip到宿主机器的网卡上，需要注意的时在实际应用时，把em0替换成具体的网卡，可以通过ifconfig查看。
+</code></pre>
+
+<p>对于需要启动sshd服务的虚拟机，需要在该虚拟机的/etc/rc.conf（一般为空文件）配置文件中增加sshd配置：</p>
+
+<pre><code>sshd_enable="YES"
+</code></pre>
+
+<p>然后在命令行执行</p>
+
+<pre><code>jexec 1 sh /etc/rc   		##这里假设该虚拟机的编号为1，可以通过jls查看虚拟机编号。
+</code></pre>
+
+<p>配置好sshd时，通过ssh仍是不能登陆进去。还需要给该虚拟机设置root用户的密码：</p>
+
+<pre><code>#先增加一个普通用户
+jexec 1 pw user add lee
+jexec 1 passwd lee
+jexec 1 pw groupmod wheel -m lee
+#用普通用户登陆
+jexec 1 su lee
+$su root
+$passwd root
+</code></pre>
+
+<p>现在就可以使用ssh登陆该jail虚拟机了。</p>
+
+<h2 id="application">Application</h2>
+<p>基本的jail虚拟机配置完成后，就可以安装应用了。可以通过把宿主机器的ports挂接在jail虚拟机下进行应用安装。在宿主机器下执行：</p>
+
+<pre><code>mount_nullfs /usr/ports /usr/jails/test/usr/ports
+</code></pre>
+
+<p>如果想再jail启动时就挂在ports系统，那么可以把这一行加入到宿主机器的/etc/rc.conf文件中。</p>
+
+<h2 id="miscellaneous">Miscellaneous</h2>
+
+<p>当jail虚拟机的某些功能不能使用时，可以通过从宿主机器的系统copy响应功能的配置文件到jail虚拟机中，并做相应地修改，就可以了。</p>
+
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>FreeBSD--Jail</title>
+      <link>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-Jail/</link>
+      <pubDate>2014-07-20T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-Jail</guid>
+      <content:encoded><![CDATA[<p>The first day of SysAdvent talked about Linux Containers (LXC), and how they are an “operating system level virtualization”, as opposed to “platform virtualization” choices like Xen or VMWare. Today, I’ll focus on jails in FreeBSD and how they achieve a similar goal.</p>
+
+<h2 id="background">BACKGROUND</h2>
+
+<p>If you think of a traditional OS it looks something like this:</p>
+
+<p><img src="/media/img/bsd-imgs/bsd014.jpg" alt="Traditional OS Architecture" title="Traditional OS Architecture" /></p>
+
+<p>Among other things, the kernel controls access to hardware, makes sure processes are not stomping all over each other’s memory, does the necessary access control checks for actions, and also ensures that packets land at the appropriate sockets. However, even if everything is perfect, a sufficiently privileged process can cause a lot of havoc if it misbehaves.</p>
+
+<p>Let’s say you have a process running as root that gets compromised and is now running arbitrary code of the attacker’s choosing. Typically, this comes in the form of a shell listening on a socket, or a connect-back shell; both of which are very bad. Through this arbitrary execution of code, the attacker can do whatever he/she is allowed to through the access controls in place. In most cases (where things like mandatory access controls are not in place) this is effectively game over for the system administrator.</p>
+
+<p>Before I go any further, I should probably explain how jails are different from what most people are familiar with. To be consistent with the earlier article I’ll call it “platform virtualization.” That solution looks something like this:</p>
+
+<p><img src="/media/img/bsd-imgs/bsd015.jpg" alt="Platform Virtualization Architecture" title="Platform Virtualization Architecture" /></p>
+
+<p>There are different approaches but it is essentially the same goal. Insert a small “virtual machine monitor” (VMM) layer - often called a hypervisor - that brokers access to the real hardware and emulates whatever hardware the systems administrator wants to the OS running on top of it. Modern chips have support for helping do this in hardware (AMD calls it “AMD-V” and Intel calls it “VT-x”). Just about every chip shipping now has this built in.</p>
+
+<p>“Platform virtualization” has many benefits to it. You can choose what hardware to provide to the guest operating system. The VMM is hopefully small enough that it can be properly secured and verified. Finally, you can decide which operating system to run as the guest. The fact that it is virtualized should be transparent - with the exception of needing driver support for whatever hardware is emulated, which every major OS has support for.</p>
+
+<p>There are some drawbacks to this approach. It can be very resource intensive as the more virtual machines you spin up the more hardware and state has to be kept in memory. With modern hardware this is becoming less of a problem, but, for some environments, it may still hold true.</p>
+
+<h2 id="enter-jails">ENTER JAILS</h2>
+
+<p>Jails are best thought of as a means to contain and isolate processes from each other, even if those processes are privileged.</p>
+
+<p><img src="/media/img/bsd-imgs/bsd016.jpg" alt="FreeBSD Jail" title="FreeBSD Jail" /></p>
+
+<p>In this case, we are running multiple processes, but the kernel has been modified to limit the resources that each process can affect or view. This is the concept upon which jails are built: The name of the game is process isolation and containment, not virtualization.</p>
+
+<h2 id="the-details">THE DETAILS</h2>
+
+<p>I’m going to skip over the details of how jails are created and what that means from a data structure standpoint and skip straight to how to set up a jail and how to use it. My examples will be from a fairly recent development snapshot (“current,” if you are familiar with FreeBSD terminology) that is not yet a finished release, so some of the things I will describe are not completely accurate to all versions of FreeBSD but the concepts are the important part.</p>
+
+<p>Jails have been around in FreeBSD for a long time now. They were first introduced in FreeBSD 4.0 (10 years ago). Since that release, jails have been refined and extended to support many of the things people want from them. Recent releases of FreeBSD include the ability for IPv6, hierarchical jails, resource utilization limits, and even virtual network stacks (which is out of scope for this article).</p>
+
+<h2 id="setup">SETUP</h2>
+
+<p>For the purposes of this article, I’m going to use the term host to indicate the FreeBSD base operating system upon which the jails will run.</p>
+
+<p>A jail only requires a handful of things in order to operate. The most important of which is a working userland. Usually, people run the same version of the userland inside a jail as the one that is running on the host, but it doesn’t have to be this way. If you want to run an older userland in a jail, it will likely work because backwards compatibility in the kernel is usually preserved.</p>
+
+<p>Actually getting a working userland is outside of the scope of this article. There are many ways to pick from: building your own, using your existing install, or installing the binaries straight from release media. The means of getting the binaries on disk is up to you. You also don’t need a full world (FreeBSD’s term for the base OS), if you know exactly what you are doing you can populate it with just what you need. There are also other tricks you can do involving null mounting in other paths. For the purposes of this article I’ve installed an exact copy of my host to /jails/test (minus any package installations).</p>
+
+<h2 id="starting-jails">STARTING JAILS</h2>
+
+<p>With a world installed to /jails/test, I don’t need anything else installed in order to start a jail. Everything you need is provided by the base FreeBSD install. Starting a jail manually is done using the jail(8) command.</p>
+
+<pre><code>wxs@ack wxs % sudo jail /jails/test test 192.168.1.100 /bin/sh
+# id
+uid=0(root) gid=0(wheel) groups=0(wheel),5(operator)
+# 
+</code></pre>
+
+<p>The arguments to the jail command are pretty straight forward. It takes a path where the root of the jail should live, a hostname, an IP address and a command inside the jail to run. Once I’m inside the jail you can see that I am automatically the root user.</p>
+
+<p>From outside of the jail, on the host, you can use the jls(8) command to list existing jails.</p>
+
+<pre><code>wxs@ack wxs % jls
+   JID  IP Address      Hostname                      Path
+     4  192.168.1.100   test                          /jails/test
+wxs@ack wxs % 
+</code></pre>
+
+<p>The one catch is that while the jail says it has an IP address, the host OS knows nothing about that IP address. In order to have your jail respond to an IP address you must add it to a network interface by adding an alias:</p>
+
+<pre><code>wxs@ack wxs % sudo jail -r 4 # Kill existing jail, so it can get the new IP
+wxs@ack wxs % sudo ifconfig bge0 alias 192.168.1.100 netmask 255.255.255.255
+wxs@ack wxs % sudo jail /jails/test/ test 192.168.1.100 /bin/sh
+#
+</code></pre>
+
+<p>And now inside our jail we can see that we have an IP address.</p>
+
+<pre><code># ifconfig bge0 | grep inet
+        inet 192.168.1.100 netmask 0xffffffff broadcast 192.168.1.100
+# 
+</code></pre>
+
+<p>So, at this point, we just need a working devfs inside our jail and we should have a normal, contained, system.</p>
+
+<pre><code>wxs@ack wxs % sudo mount -t devfs devfs /jails/test/dev
+wxs@ack wxs % mount | grep jails
+data/jails on /jails (zfs, local, noatime)
+devfs on /jails/7/dev (devfs, local, multilabel)
+devfs on /jails/test/dev (devfs, local, multilabel)
+wxs@ack wxs % 
+</code></pre>
+
+<p>You might want your jail to be accessible from the network, so let’s run an SSH daemon! I’ll permit root logins for this jail, just to make my life easier, but you can add users inside jails as normal. Also, be sure to set your root password before you expose any network services. From the root shell you have after running the jail(8) command, do this:</p>
+
+<pre><code># sed -i '.bak' -e 's/^#PermitRootLogin no/PermitRootLogin yes/' /etc/ssh/sshd_config
+# /etc/rc.d/sshd onestart
+[... Lots of output about host key generation ...]
+# sockstat -4l | grep 22
+root     sshd       61052 3  tcp4   192.168.1.100:22      *:*
+# 
+</code></pre>
+
+<p>And outside the jail:</p>
+
+<pre><code>wxs@ack wxs % ssh root@192.168.1.100
+The authenticity of host '192.168.1.100 (192.168.1.100)' can't be
+established.
+RSA key fingerprint is f9:87:e1:41:3c:27:56:fd:5a:0e:c9:0b:c5:9a:d5:15.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.1.100' (RSA) to the list of known hosts.
+Password:
+Last login: Mon Dec  6 01:43:39 2010 from 192.168.1.100
+FreeBSD ?.?.?  (UNKNOWN)
+
+Welcome to FreeBSD!
+
+[... MOTD ...]
+test#
+</code></pre>
+
+<p>A keen eye would spot the weirdness ‘?.?.?’ in the MOTD above. Normally that is cleared up when the computer boots, but since we didn’t really “boot” this jail, that step never happened. Let’s explore what it takes to get a jail to start automatically upon boot.</p>
+
+<h2 id="booting-automatically">BOOTING AUTOMATICALLY</h2>
+
+<p>One thing you must do when starting a jail is make sure the host services are set to listen on only IP addresses that belong to the host, and not the jail. Failure to do this will cause your host services to listen on IP addresses that should be for the jail. This can have unintended consequences such as exposing host services to places they shouldn’t be. For now I’m assuming you know how to do that.</p>
+
+<p>Like most things in FreeBSD they are controlled with settings in /etc/rc.conf. There are actually a whole bunch of settings available, but here’s the simple set I’m using:</p>
+
+<pre><code>wxs@ack head % fgrep test /etc/rc.conf  
+jail_list="test"
+jail_test_rootdir="/jails/test"
+jail_test_hostname="test"
+jail_test_interface="bge0"
+jail_test_ip="192.168.1.100"
+jail_test_devfs_enable="YES"
+wxs@ack head % 
+</code></pre>
+
+<p>Using this configuration, the ‘test’ jail will boot and start automatically.</p>
+
+<h2 id="booting-manually">BOOTING MANUALLY</h2>
+
+<p>You can use the /etc/rc.d/jail script to boot a jail manually provided that the appropriate settings are set in /etc/rc.conf. Another option is to set the IP address alias manually and mount devfs manually then call /etc/rc yourself:</p>
+
+<pre><code>wxs@ack wxs % sudo jail -r 2 # Kill existing jail...
+wxs@ack wxs % sudo jail /jails/test test 192.168.1.100 /bin/sh /etc/rc
+/etc/rc: WARNING: $hostname is not set -- see rc.conf(5).
+Creating and/or trimming log files.
+Starting syslogd.
+ELF ldconfig path: /lib /usr/lib /usr/lib/compat
+32-bit compatibility ldconfig path: /usr/lib32
+Clearing /tmp (X related).
+Updating motd:.
+Starting cron.
+
+Sun Dec 12 16:16:37 UTC 2010
+wxs@ack wxs % jls
+   JID  IP Address      Hostname                      Path
+     3  192.168.1.100   test                          /jails/test
+wxs@ack wxs % 
+</code></pre>
+
+<h2 id="restrictions">RESTRICTIONS</h2>
+
+<p>So if jails are all about isolation and containment, what can and what can’t you do inside a jail? The general rule of thumb is that if it affects the host or other jails it is restricted by default. There are knobs you can turn to allow these things, but in the interests of not breaking the security model, they are turned off by default. Exactly what is restricted and what knobs are available is highly dependent upon the version of FreeBSD you are running. As more and more things are being designed to work better with jails, the set of restricted operations is shrinking. For example, in earlier releases root inside a jail was not allowed to change any network stack configuration information. With the addition of virtualized network stacks in newer releases of FreeBSD this restriction is gone, provided the jail is using a virtualized stack.</p>
+
+<p>For more information on this it is best to read the documentation available.</p>
+
+<h2 id="trade-offs">TRADE OFFS</h2>
+
+<p>Jails are a great way of getting “operating system level virtualization” on FreeBSD, but like anything else, they come with a series of trade-offs which must be considered prior to implementation.</p>
+
+<p>A kernel level compromise does break the isolation provided by jails. In a “platform virtualization” solution it would require a bug in the hypervisor for that to happen. Jails are not necessarily any more or less secure than a “platform virtualization” solution as it is going to come down to implementation details. Bugs do happen in both worlds.</p>
+
+<p>Another trade-off is that a jail can not emulate arbitrary hardware like a VMM can. If you want to add a new virtual disk to your VM in a “platform virtualization” solution it is a simple operation - the physical disk doesn’t really exist as it is just a file on the filesystem of the host. In a jail you can not emulate arbitrary hardware.</p>
+
+<p>As a jail is really just isolating processes from each other, it is important to realize that root on the host has complete control over every jail. This is an important thing to keep in mind when setting up a jail environment. Root on the host should be trusted and controlled far more than root in any of the jails.</p>
+
+<p>Lastly, a user on the host can get access to things inside one of the jails if the UIDs are the same. For example, on one of my hosts my UID is 1001, and inside one of the jails a different user (user1) has UID 1001. From the viewpoint of user1, only he has access to his files inside the jail. From my viewpoint, outside of the jail, the files are owned by me. The host is going to use it’s copy of /etc/passwd to determine ownership of files, which means there can be overlapping information. This is another important consideration to keep in mind when setting up a jail environment.</p>
+
+<h2 id="uses">USES</h2>
+
+<p>There are many uses for jails. Lots of places use them to isolate web hosting environments from each other, to provide root inside a contained system for a customer, and to isolate developers from each other. I personally use them to isolate test environments from each other. As a developer who spends most of his time up in userland, this is a great solution to my need to be able to quickly setup a clean test environment. As you spend more time with jails, you begin to see different opportunities for application.</p>
+
+<p>As more parts of FreeBSD become friendlier to jails you can start to build very interesting things. Virtual network stacks, zfs, multi-IP jails, hierarchical jails and many other things are fertile areas for exploration as a systems administrator. As is often the case, the best way to get familiar with jails is to dive in heads first!</p>
+
+<p>FROM: <a href="http://sysadvent.blogspot.hk/2010/12/day-14-freebsd-jails.html" title="原文地址">http://sysadvent.blogspot.hk/2010/12/day-14-freebsd-jails.html</a></p>
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>FreeBSD--内核定制，以IPFilter防火墙为例</title>
+      <link>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-make-Kernel/</link>
+      <pubDate>2014-07-15T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-make-Kernel</guid>
+      <content:encoded><![CDATA[<p>本文中所使用的FreeBSD版本为FreeBSD 10.0-RELEASE</p>
+
+<p>本文以简单介绍FreeBSD中的防火墙IPFIlter为起因，完成FreeBSD内核的定制化方法及其遇到的一些问题。</p>
+
+<p>首先需要先了解下当前的系统状况</p>
+
+<p><img src="/media/img/bsd-imgs/bsd007.png" alt="FreeBSD 内核版本及构建时间" title="FreeBSD 内核版本及构建时间" /></p>
+
+<p>下面需要为定制内核做准备。</p>
+
+<p><img src="/media/img/bsd-imgs/bsd008.png" alt="FreeBSD 内核定制准备" title="FreeBSD 内核定制准备" /></p>
+
+<p>下图说明在使用IPFilter（IPF）防火墙之前，网络是好的。</p>
+
+<p><img src="/media/img/bsd-imgs/bsd009.png" alt="FreeBSD 使用IPF之前的网络" title="FreeBSD 使用IPF之前的网络" /></p>
+
+<p>下面将会编辑/root/kernels/KERNEL_IPF文件，修改该文件中ident为“KERNEL_IPF”，并增加IPF选项：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd010.png" alt="FreeBSD IPF在内核中的选项" title="FreeBSD IPF在内核中的选项" /></p>
+
+<p>下面就可以构建并安装内核了。内核会被安装到/boot/kernel/目录下，/boot/kernel/目录下原来的内核会被移动到/boot/kernel.old/目录下.构建安装内核的命令很简单：</p>
+
+<pre><code>make buildkernel KERNCONF=KERNEL_IPF 
+make installkernel KERNCONF=KERNEL_IPF
+</code></pre>
+
+<p>这样后/boot目录下就会kernel子目录和kernel.old子目录了。</p>
+
+<p>最后重新启动系统，就可以看见现在已经在新内核下了：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd011.png" alt="FreeBSD 新内核及IPF" title="FreeBSD 新内核及IPF" /></p>
+
+<p>下面简单的配置下IPF，使系统可以使用Loopback Interface。创建/etc/ips.rules文件，并添加如下内容：</p>
+
+<pre><code>pass in quick on lo0 all
+pass out quick on lo0 all
+</code></pre>
+
+<p>并在终端输入如下命令：</p>
+
+<pre><code>ipf -Fa -f /etc/ips.rules
+</code></pre>
+
+<p>这样在终端就可以ping通127.0.0.1了。</p>
+
+<p>再回到定制化内核。内核定制需要关注几个文件:</p>
+
+<pre><code>/usr/src/sys/amd64/conf/NOTES
+/usr/src/sys/conf/NOTE
+</code></pre>
+
+<p>这两个文件详细的说明了定制内核时，需要注意的内容。在定制完内核后，从启系统，在下面画面中选择 【3】Escape to loader prompt ：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd012.png" alt="FreeBSD 启动画面" title="FreeBSD 启动画面" /></p>
+
+<p>然后就可以进入loder交互界面，在该界面下，可以选择启动个内核，可以选择如何启动。首先可以使用lsmod命令看一下当前引导的内核是哪一个：</p>
+
+<p><img src="/media/img/bsd-imgs/bsd013.png" alt="FreeBSD loader界面" title="FreeBSD loader界面" /></p>
+
+<p>然后可以使用load命令来加载内核，在最开始时，有把一个内核备份到/root/kernels/kernel_ipf/目录下，而且在/boot/kernel.old/目录下也有一个系统自动备份的内核。所以可以使用其中的任何一个：</p>
+
+<pre><code>###下面的命令使用任何一个都可以：
+load /root/kernels/kernel_ipf/kernel
+load /boot/kernel.old/kernel
+</code></pre>
+
+<p>这样就会把内核加载起来。最后，通过boot命令就可以使用指定加载的内核完成系统启动了。</p>
+
+<p>在了解系统启动过程时，需要关注/boot/defaults/loader.conf这个文件，这里面记录了系统启动的一些参数。如果需要修改参数系统启动参数，可以通过把需要修改的参数添加到/boot/loader.conf这个文件来完成。</p>
+
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>FreeBSD--开启SSHD</title>
+      <link>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-SSHD/</link>
+      <pubDate>2014-07-07T00:00:00+08:00</pubDate>
+      <author>Jeff Lee</author>
+      <guid>http://westerly-lzh.github.io/cn/2014/07/FreeBSD-SSHD</guid>
+      <content:encoded><![CDATA[<p>FreeBSD默认是不开启sshd的，即FreeBSD默认不能通过ssh进行远程登录。下面就是配置如何使得FreeBSD可以通过远程进行登录，包括普通用户的登录和root用户的登录。</p>
+
+<p><img src="/media/img/bsd-imgs/bsd003.png" alt="FreeBSD 默认SSHD不开启" title="FreeBSD 默认SSHD不开启" /></p>
+
+<p>下面是如何开启普通用户的远程登录权限。</p>
+
+<p>首先需要修改/etc/inetd.conf，如果需要支持IPv4，那么去掉红线上ssh那一行的“#”，</p>
+
+<p><img src="/media/img/bsd-imgs/bsd004.png" alt="FreeBSD inetd.conf" title="FreeBSD inetd.conf" /></p>
+
+<p>如果需要sshd支持IPv6，那么就把途中红线下的那行“#”也去掉，然后编辑/etc/rc.conf，增加一行</p>
+
+<p><img src="/media/img/bsd-imgs/bsd005.png" alt="FreeBSD rc.conf" title="FreeBSD rc.conf" /></p>
+
+<p>最后，启动sshd服务：</p>
+
+<pre><code>/etc/rc.d/sshd start   ###启动服务
+/etc/rc.d/sshd restart ###重启服务
+</code></pre>
+
+<p>这样就可以使用FreeBSD的ssh服务来远程登录了。</p>
+
+<p><img src="/media/img/bsd-imgs/bsd006.png" alt="FreeBSD sshd start" title="FreeBSD sshd start" /></p>
+
+<p>这样就可以使用普通用户登录了，如果希望使用root，那么可以在普通用户下使用su命令切换到root用户下。但是这样的配置是不允许直接使用root账户登录的。可以通过修改/etc/ssh/sshd_config文件来开启root用户直接登录，</p>
+
+<pre><code>#PermitRootLogin no
+</code></pre>
+
+<p>取消/etc/ssh/sshd_config中上面一行中的“#”注释，并把no改为yes，保存后重启sshd服务即可。</p>
+]]></content:encoded>
+    </item>
+    
+  </channel>
+</rss>
