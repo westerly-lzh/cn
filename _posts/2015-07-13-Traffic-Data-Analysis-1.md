@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  BRT日客流分析1
+title:  交通数据分析：BRT日客流分析1
 categories:
-- BRT
+- 可视化
 tags:
 - 公交
 - BRT

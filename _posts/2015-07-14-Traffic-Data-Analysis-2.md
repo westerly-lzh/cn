@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  BRT客流分析2
+title:  交通数据分析：BRT客流分析2
 categories:
-- BRT
+- 可视化
 tags:
 - 公交
 - BRT
