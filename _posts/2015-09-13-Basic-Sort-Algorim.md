@@ -297,6 +297,6 @@ tags:
 	
 ## 时间复杂度比较：
 
-[时间复杂度](/media/img/algori/sort.jpg)
+![时间复杂度](/media/img/algori/sort.jpg)
 
 完成于2015-9-12，成渝动车D5129.
