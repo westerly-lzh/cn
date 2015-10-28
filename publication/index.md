@@ -9,7 +9,7 @@ comments: yes
 ## 一、作业相关
 
 1.	博弈论－－在线电影定价模型[PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/game_theory_dianying.pdf?raw=true),[Latex](https://github.com/westerly-lzh/documents/blob/master/latex/game_theory_dianying.tex),[Bibliography](https://github.com/westerly-lzh/documents/blob/master/latex/game_theory_dianying.bib),[Code](https://github.com/westerly-lzh/documents/blob/master/codes/game_theory_dianying.nb)
-2.	
+2.	硕士阶段部分工作成果[PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/works_for_postgraduate.pdf?raw=true)
 
 ## 二、书籍相关
 

@@ -10,6 +10,8 @@ I just want to make my life a little more simpler。
 
 Email: jeff_lee_working@sina.com
 
+简历[PDF](https://github.com/westerly-lzh/documents/blob/master/pdf/resume_for_postgraduate.pdf?raw=true)
+
 # 兴趣
 必须说当我第一次使用java时，我果断的放弃了c。当时感觉终于从c中那晦涩的指针中逃离了，程序员需要关注的就是怎样实现软件的逻辑，内存回收就交给GC吧。
 后来就开始慢慢的使用python，确实感觉我又从java那些条条框框中解放了出来，程序员需要关注的就是怎样实现软件的逻辑，做什么都先要建个Class，那终于不是必要的了。
